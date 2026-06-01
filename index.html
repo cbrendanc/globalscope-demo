@@ -256,11 +256,12 @@
 .tcard .top{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--muted)}
 .tcard .flags{font-size:15px;letter-spacing:1px}
 .tcard .firm{text-align:right;font-weight:600;letter-spacing:.4px;max-width:130px}
-.tcard .tt-in{padding:24px 18px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
+.tcard .tt-in{padding:18px 18px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
+.tcard .tt-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 0}
 .tcard .tt-party{font-weight:700;font-size:16px;color:#1f2a3a;line-height:1.35}
 .tcard .tt-party.acq{color:#33506f}
 .tcard .tt-rel{font-style:italic;color:var(--muted);font-size:12.5px;margin:12px 0}
-.tcard .tt-foot{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted);line-height:1.55}
+.tcard .tt-foot{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted);line-height:1.55}
 .tcard .tt-adv{color:var(--accent-d);font-weight:600}
 .tcard .side-pill{font-size:10px;font-weight:600;letter-spacing:.3px;border-radius:6px;padding:2px 8px}
 .side-pill.sell{background:#eaf4ee;color:#1c7a4f}
@@ -601,8 +602,10 @@ const PAGES = {
     const card=(t,i)=>{const d=dealLine(t);return `<div class="tcard" data-txn="${i}">
       <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.advisor}</span></div>
       <div class="tt-in">
-        <div class="tt-party">${d.a}</div>
-        ${d.b?`<div class="tt-rel">${d.v}</div><div class="tt-party acq">${d.b}</div>`:`<div class="tt-rel">Strategic advisory</div>`}
+        <div class="tt-body">
+          <div class="tt-party">${d.a}</div>
+          ${d.b?`<div class="tt-rel">${d.v}</div><div class="tt-party acq">${d.b}</div>`:`<div class="tt-rel">Strategic advisory</div>`}
+        </div>
         <div class="tt-foot">${t.region} · ${t.year} · ${t.sector}</div>
       </div></div>`;};
     wireFilters(TXNS.map((t,i)=>({...t,_i:i})),["sector","region"],
