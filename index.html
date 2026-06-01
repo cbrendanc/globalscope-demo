@@ -214,6 +214,8 @@
 .demo-ribbon{background:repeating-linear-gradient(45deg,#1d3050,#1d3050 12px,#22395c 12px,#22395c 24px);color:#dfe8f5;font-size:11.5px;letter-spacing:.4px;text-align:center;padding:6px 10px;font-weight:600}
 .demo-ribbon b{color:#fff}
 .topbar .demo-tag{background:var(--amber-soft);color:var(--amber);border:1px solid #ecd9b4;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 8px;margin-right:14px}
+.hamburger{display:none;background:none;border:none;font-size:20px;color:var(--ink);cursor:pointer;margin-right:14px;line-height:1}
+.brand .name small{white-space:nowrap}
 
 /* tabs strip */
 .tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
@@ -234,26 +236,38 @@
 /* filter bar */
 .filterbar{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:18px}
 .filterbar .search{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:12px;color:var(--muted)}
-.filterbar .search input{border:none;outline:none;flex:1;font-size:13.5px;font-family:inherit;margin-left:8px}
+.filterbar .search input{border:none;outline:none;flex:1;font-size:13.5px;font-family:inherit;margin-left:8px;background:transparent;color:var(--ink)}
 .filterbar .frow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.filterbar select{padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;color:var(--ink);background:#fff;flex:1;min-width:140px}
+.filterbar select{padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;color:var(--ink);background:#fff;flex:1;min-width:150px}
 .filterbar .lnk{color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
+.resultcount{font-size:12px;color:var(--muted);margin:-6px 0 14px}
 
 /* generic card grid */
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;border:1px dashed var(--line);border-radius:12px}
 
 /* transaction tombstone card */
-.tcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.tcard:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(22,36,61,.12)}
 .tcard .top{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px 0;font-size:10.5px;color:var(--muted)}
 .tcard .flags{font-size:15px;letter-spacing:1px}
 .tcard .firm{text-align:right;font-weight:600;letter-spacing:.4px;max-width:120px}
-.tcard .body{padding:8px 16px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
 .tcard .yr{font-size:11px;color:var(--muted);text-align:left;padding:0 16px}
+.tcard .body{padding:8px 16px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
 .tcard .client{font-weight:600;font-size:13.5px;margin:6px 0 4px}
 .tcard .logo{height:54px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#33506f;font-size:18px;letter-spacing:.5px;margin:8px 0}
 .tcard .desc{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:auto}
 .tcard .verb{font-size:11px;color:var(--accent-d);font-weight:600;margin-top:8px}
+
+/* detail view */
+.detail{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start}
+.detail dl{display:grid;grid-template-columns:190px 1fr;gap:0}
+.detail dt{color:var(--muted);font-size:13px;padding:9px 0;border-bottom:1px solid var(--line)}
+.detail dd{margin:0;font-size:13.5px;padding:9px 0;border-bottom:1px solid var(--line)}
+@media(max-width:820px){.detail{grid-template-columns:1fr}}
 
 /* opportunity card */
 .ocard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 18px 20px}
@@ -270,12 +284,14 @@
 .fcard .logo{height:46px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#33506f;font-size:16px;margin-bottom:10px}
 .fcard h3{margin:0 0 3px;font-size:14px}
 .fcard p{margin:0;color:var(--muted);font-size:12px}
-.mapbox{height:230px;border:1px solid var(--line);border-radius:12px;background:
-  radial-gradient(circle at 20% 40%,#dce8f2,transparent 30%),
+.mapbox{height:240px;border:1px solid var(--line);border-radius:12px;background:
+  radial-gradient(circle at 20% 38%,#dce8f2,transparent 30%),
   radial-gradient(circle at 70% 60%,#dce8f2,transparent 28%),
   linear-gradient(180deg,#eef3f8,#e6edf5);
-  display:flex;align-items:center;justify-content:center;color:#8aa0bd;font-size:13px;margin-bottom:18px;position:relative;overflow:hidden}
-.mapbox .pin{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(47,127,176,.2)}
+  margin-bottom:18px;position:relative;overflow:hidden}
+.mapbox .pin{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(47,127,176,.2);transition:transform .1s}
+.mapbox .pin:hover{transform:scale(1.4)}
+.mapbox .cap{position:absolute;left:14px;bottom:10px;font-size:11px;color:#8aa0bd}
 
 /* content card */
 .ccard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
@@ -286,14 +302,25 @@
 .ccard .meta{font-size:11.5px;color:var(--muted);display:grid;grid-template-columns:auto 1fr;gap:5px 10px}
 
 /* events calendar */
+.eventslayout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+@media(max-width:900px){.eventslayout{grid-template-columns:1fr}}
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .legend .lg{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--ink)}
 .legend .dot{width:9px;height:9px;border-radius:50%}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
 .cal .dow{background:#f7f9fc;font-size:11px;color:var(--muted);font-weight:600;padding:8px;text-align:left;border-bottom:1px solid var(--line)}
-.cal .day{min-height:78px;border:0.5px solid #eef1f6;padding:7px;font-size:12px}
+.cal .day{min-height:80px;border:0.5px solid #eef1f6;padding:7px;font-size:12px}
 .cal .day .n{color:var(--muted);font-weight:600}
-.cal .ev{margin-top:5px;border-radius:6px;padding:4px 6px;font-size:10px;line-height:1.25;color:#fff}
+.cal .ev{margin-top:5px;border-radius:6px;padding:4px 6px;font-size:10px;line-height:1.25;color:#fff;cursor:default}
+.upcoming{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px}
+.upcoming h3{margin:0 0 12px;font-size:14px}
+.upcoming .u{display:flex;gap:11px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.upcoming .u:last-child{border-bottom:none}
+.upcoming .dt{width:42px;text-align:center;flex-shrink:0}
+.upcoming .dt .d{font-size:17px;font-weight:700;line-height:1}
+.upcoming .dt .m{font-size:10px;color:var(--muted);text-transform:uppercase}
+.upcoming .ti{font-size:12.5px;font-weight:600}
+.upcoming .sub{font-size:11px;color:var(--muted)}
 
 /* notifications */
 .notif{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
@@ -319,16 +346,26 @@
 .wizbar .close:hover{color:var(--ink);border-color:var(--muted)}
 
 .page-intro{color:var(--muted);font-size:13px;margin:-6px 0 18px;max-width:720px}
-@media(max-width:920px){.statgrid{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.cal .day{min-height:50px}}
+@media(max-width:900px){.dash-cols{grid-template-columns:1fr !important}}
+
+/* responsive sidebar */
+@media(max-width:920px){
+  .statgrid{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .22s ease;z-index:120}
+  .app.nav-open .sidebar{transform:none;box-shadow:0 0 40px rgba(0,0,0,.3)}
+  .hamburger{display:inline-flex}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(10,18,30,.45);z-index:110}
+  .app.nav-open .scrim{display:block}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <!-- Sidebar: MEMBER view only (no admin items) -->
+<div class="app" id="app">
+  <div class="scrim" id="scrim"></div>
   <aside class="sidebar">
     <div class="brand">
       <div class="mark">GS</div>
-      <div class="name">GLOBALSCOPE<small>M&amp;A OFFICES WORLDWIDE</small></div>
+      <div class="name">GLOBALSCOPE<small>100 M&amp;A OFFICES · GLOBALLY ONE</small></div>
     </div>
     <nav class="nav" id="nav">
       <a data-route="dashboard"><span class="ic">▦</span> Dashboard</a>
@@ -347,11 +384,14 @@
   <div class="main">
     <div class="demo-ribbon">DEMO ENVIRONMENT — layout &amp; UX only. <b>No data is captured or saved.</b> For workshopping the member-app redesign.</div>
     <div class="topbar">
-      <h1 id="pageTitle">Dashboard</h1>
+      <div style="display:flex;align-items:center;min-width:0">
+        <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+        <h1 id="pageTitle">Dashboard</h1>
+      </div>
       <div class="who">
         <span class="autosave" id="autosave">✓ Draft saved automatically</span>
         <span class="demo-tag">DEMO</span>
-        <span>Hi, Brendan</span><div class="avatar">BC</div>
+        <span>Welcome</span><div class="avatar">GS</div>
       </div>
     </div>
     <div class="content"><div id="page"></div></div>
@@ -360,51 +400,49 @@
 
 <script>
 /* =====================================================================
-   GLOBALSCOPE MEMBER APP — DEMO SHELL
-   Hash-routed static demo. No backend, no storage, no data capture.
-   The Transactions "Submit" flow launches the redesigned wizard module.
+   GLOBALSCOPE MEMBER APP — DEMO SHELL  (no backend / no storage)
    ===================================================================== */
 
 const SECTORS6 = ["Business & Financial Services","Consumer","Energy Transition","Industrials","Life Sciences","TMT"];
-const REGIONS_F = ["All Regions","Africa","Asia-Pacific","Europe","Latin America & Caribbean","Middle East","North America","South Asia"];
+const REGIONS_F = ["Africa","Asia-Pacific","Europe","Latin America & Caribbean","Middle East","North America","South Asia"];
+const VALUE_BANDS = ["< €5M","€5–€20M","€20–€50M","€50–€100M","€100M+"];
 
 /* ---------- mock data ---------- */
 const TXNS = [
-  {client:"Dtales ApS", logo:"DTALES", firm:"Carlsquare GmbH", flags:"🇩🇰 🇸🇪", year:"2026", verb:"Sold to", sector:"TMT", desc:"Advised on the sale of a Danish data-analytics business to a Nordic strategic acquirer."},
-  {client:"Schwabe Group", logo:"SCHWABE", firm:"Carlsquare GmbH", flags:"🇩🇪 🇩🇪", year:"2026", verb:"Acquired", sector:"Life Sciences", desc:"Acquisition of a natural-health products company expanding its European footprint."},
-  {client:"CSG Chemical", logo:"CSG", firm:"Pegasus Capital", flags:"🇮🇪 🇬🇧", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Pegasus advised CSG Chemical Solutions on its acquisition of a UK chemical distribution specialist."},
-  {client:"Dalco GF Tech", logo:"ARVIND", firm:"Incredmape Advisory", flags:"🇮🇳 🇺🇸", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Arvind Advanced Materials acquired Dalco GF Technologies for USD $136M."},
-  {client:"SMEC Power & Technology", logo:"SMEC", firm:"Octavian Group", flags:"🇦🇺 🇦🇺", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Mayfield Group Holdings acquired SMEC Power & Technology, an Australian electrical engineering company."},
-  {client:"Helio Renewables", logo:"HELIO", firm:"DEX Advisory", flags:"🇳🇱 🇪🇸", year:"2026", verb:"Raised capital", sector:"Energy Transition", desc:"Structured a growth-equity raise for a solar developer to fund its Iberian pipeline."},
-  {client:"Northbridge Bank", logo:"NORTHBR.", firm:"Capital Times", flags:"🇨🇦 🇨🇦", year:"2025", verb:"Advised", sector:"Business & Financial Services", desc:"Strategic advisory on a regional banking consolidation."},
-  {client:"FreshFields Foods", logo:"FRESH", firm:"AWR Lloyd", flags:"🇹🇭 🇸🇬", year:"2025", verb:"Sold to", sector:"Consumer", desc:"Cross-border sale of a food-processing business to a regional consumer group."}
+  {client:"Dtales ApS", logo:"DTALES", firm:"Carlsquare GmbH", flags:"🇩🇰 🇸🇪", year:"2026", verb:"Sold to", buyer:"Nordic Data Group", side:"Sell-side", sector:"TMT", region:"Europe", ev:"EUR 42,000,000", ebitda:"11.0x", rev:"3.1x", desc:"Advised on the sale of a Danish data-analytics business to a Nordic strategic acquirer."},
+  {client:"Schwabe Group", logo:"SCHWABE", firm:"Carlsquare GmbH", flags:"🇩🇪 🇩🇪", year:"2026", verb:"Acquired", buyer:"Schwabe Group", side:"Buy-side", sector:"Life Sciences", region:"Europe", ev:"EUR 130,000,000", ebitda:"9.5x", rev:"2.4x", desc:"Acquisition of a natural-health products company expanding its European footprint."},
+  {client:"CSG Chemical", logo:"CSG", firm:"Pegasus Capital", flags:"🇮🇪 🇬🇧", year:"2026", verb:"Acquired", buyer:"CSG Chemical Solutions", side:"Buy-side", sector:"Industrials", region:"Europe", ev:"GBP 58,000,000", ebitda:"8.2x", rev:"1.4x", desc:"Pegasus advised CSG Chemical Solutions on its acquisition of a UK chemical distribution specialist."},
+  {client:"Dalco GF Tech", logo:"ARVIND", firm:"Incredmape Advisory", flags:"🇮🇳 🇺🇸", year:"2026", verb:"Acquired", buyer:"Arvind Advanced Materials", side:"Sell-side", sector:"Industrials", region:"North America", ev:"USD 136,000,000", ebitda:"10.1x", rev:"2.0x", desc:"Arvind Advanced Materials acquired Dalco GF Technologies for USD $136M."},
+  {client:"SMEC Power & Technology", logo:"SMEC", firm:"Octavian Group", flags:"🇦🇺 🇦🇺", year:"2026", verb:"Acquired", buyer:"Mayfield Group Holdings", side:"Sell-side", sector:"Industrials", region:"Asia-Pacific", ev:"AUD 30,000,000", ebitda:"6.0x", rev:"1.0x", desc:"Mayfield Group Holdings acquired SMEC Power & Technology, an Australian electrical engineering company."},
+  {client:"Helio Renewables", logo:"HELIO", firm:"DEX Advisory", flags:"🇳🇱 🇪🇸", year:"2026", verb:"Raised capital", buyer:"Iberia Green Fund", side:"Capital raise", sector:"Energy Transition", region:"Europe", ev:"EUR 25,000,000", ebitda:"—", rev:"—", desc:"Structured a growth-equity raise for a solar developer to fund its Iberian pipeline."},
+  {client:"Northbridge Bank", logo:"NORTHBR.", firm:"Capital Times", flags:"🇨🇦 🇨🇦", year:"2025", verb:"Advised", buyer:"—", side:"Advisory", sector:"Business & Financial Services", region:"North America", ev:"USD 90,000,000", ebitda:"—", rev:"—", desc:"Strategic advisory on a regional banking consolidation."},
+  {client:"FreshFields Foods", logo:"FRESH", firm:"AWR Lloyd", flags:"🇹🇭 🇸🇬", year:"2025", verb:"Sold to", buyer:"Asia Consumer Partners", side:"Sell-side", sector:"Consumer", region:"Asia-Pacific", ev:"USD 48,000,000", ebitda:"7.5x", rev:"1.1x", desc:"Cross-border sale of a food-processing business to a regional consumer group."}
 ];
 const OPPS = [
-  {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"100M+", file:"Public", region:"South Asia"},
-  {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€10M", file:"Public", region:"Latin America & Caribbean"},
-  {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"€1–€5M", file:"Public", region:"Asia-Pacific"},
-  {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"No file", region:"North America"}
+  {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"€100M+", file:"Public", region:"South Asia", sector:"TMT"},
+  {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€20M", file:"Public", region:"Latin America & Caribbean", sector:"Industrials"},
+  {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"< €5M", file:"Public", region:"Asia-Pacific", sector:"Industrials"},
+  {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer"}
 ];
 const FIRMS = [
-  {name:"Octavian Group", loc:"Sydney, Australia", logo:"OCTAVIAN", x:"82%", y:"78%"},
-  {name:"Carlsquare GmbH", loc:"Hamburg, Germany", logo:"CARLSQ.", x:"50%", y:"34%"},
-  {name:"Osprey Capital", loc:"Toronto, Canada", logo:"OSPREY", x:"24%", y:"36%"},
-  {name:"RCS Advisors", loc:"Mumbai, India", logo:"RCS", x:"66%", y:"50%"},
-  {name:"AWR Lloyd", loc:"Bangkok, Thailand", logo:"AWR", x:"74%", y:"56%"},
-  {name:"DEX Advisory", loc:"Amsterdam, Netherlands", logo:"DEX", x:"49%", y:"32%"},
-  {name:"Pegasus Capital", loc:"Dublin, Ireland", logo:"PEGASUS", x:"45%", y:"33%"},
-  {name:"MelCap Partners", loc:"Cleveland, USA", logo:"MELCAP", x:"22%", y:"40%"}
+  {name:"Octavian Group", loc:"Sydney, Australia", region:"Asia-Pacific", logo:"OCTAVIAN", x:"83%", y:"80%"},
+  {name:"Carlsquare GmbH", loc:"Hamburg, Germany", region:"Europe", logo:"CARLSQ.", x:"51%", y:"33%"},
+  {name:"Osprey Capital", loc:"Toronto, Canada", region:"North America", logo:"OSPREY", x:"24%", y:"35%"},
+  {name:"RCS Advisors", loc:"Mumbai, India", region:"South Asia", logo:"RCS", x:"67%", y:"50%"},
+  {name:"AWR Lloyd", loc:"Bangkok, Thailand", region:"Asia-Pacific", logo:"AWR", x:"75%", y:"55%"},
+  {name:"DEX Advisory", loc:"Amsterdam, Netherlands", region:"Europe", logo:"DEX", x:"49%", y:"31%"},
+  {name:"Pegasus Capital", loc:"Dublin, Ireland", region:"Europe", logo:"PEGASUS", x:"45%", y:"32%"},
+  {name:"MelCap Partners", loc:"Cleveland, USA", region:"North America", logo:"MELCAP", x:"22%", y:"39%"}
 ];
 const EVENTS = [
-  {day:2, t:"Introduction to Stefanini Group", cat:"#9b6dd6"},
-  {day:10, t:"APAC-MEA Deal Day", cat:"#2f9e6b"},
-  {day:17, t:"Quarterly Roundtable", cat:"#2f9e6b"},
-  {day:24, t:"Sector Call — Industrials", cat:"#2f7fb0"},
-  {day:26, t:"Transaction Reporting deadline", cat:"#16243d"}
+  {day:2, t:"Introduction to Stefanini Group", cat:"#9b6dd6", catName:"Webinar", time:"09:00"},
+  {day:10, t:"APAC-MEA Deal Day", cat:"#2f9e6b", catName:"Deal Day", time:"All day"},
+  {day:17, t:"Quarterly Roundtable", cat:"#2f9e6b", catName:"Roundtable", time:"14:00"},
+  {day:24, t:"Sector Call — Industrials", cat:"#2f7fb0", catName:"Sector Call", time:"16:00"},
+  {day:26, t:"Transaction Reporting deadline", cat:"#16243d", catName:"Reporting", time:"—"}
 ];
-const EVENT_CATS = [["Academies","#e07b2a"],["Americas Deal Day","#2f9e6b"],["APAC-MEA DD","#2f9e6b"],
-  ["Board of Directors","#888"],["Conferences","#d84a3a"],["Quarterly Roundtables","#2f9e6b"],
-  ["Sector Calls","#2f7fb0"],["Transaction Reporting","#16243d"],["Webinars","#9b6dd6"]];
+const EVENT_CATS = [["Academies","#e07b2a"],["Deal Days","#2f9e6b"],["Conferences","#d84a3a"],
+  ["Roundtables","#2f9e6b"],["Sector Calls","#2f7fb0"],["Transaction Reporting","#16243d"],["Webinars","#9b6dd6"]];
 const CONTENT = [
   {tag:"Conference Materials", date:"13 May 2026", title:"Spring 2026 Santiago Conference — Business & Financials Sector Presentation", sector:"Business & Financial Services", lang:"English"},
   {tag:"Sector Report", date:"07 May 2026", title:"Software Benchmark Report Q1 2026 — Silverpeak", sector:"TMT", lang:"English"},
@@ -418,16 +456,26 @@ const NOTIFS = [
   {ic:"⚑", t:"Quarterly Transaction Reporting due 26 June", d:"Please submit and e-sign your quarterly reporting letter.", when:"5d ago", unread:false}
 ];
 
-/* ---------- reusable bits ---------- */
-function filterBar(opts){
-  const sels = (opts||["All Regions","All Sectors","All Sub-sectors"]).map(o=>`<select><option>${o}</option></select>`).join("");
-  return `<div class="filterbar">
-    <div class="search">🔍<input placeholder="Search…"></div>
-    <div class="frow">${sels}<span class="lnk">Reset</span><span class="lnk">Apply</span></div>
-  </div>`;
-}
+/* ---------- helpers ---------- */
+function opt(list,sel){ return list.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join(""); }
 function tabs(items, activeIdx, ctaIdx){
   return `<div class="tabs">${items.map((t,i)=>`<div class="tab ${i===activeIdx?'active':''} ${i===ctaIdx?'cta':''}" data-tab="${i}">${t}</div>`).join("")}</div>`;
+}
+function filterBar(placeholder, selects){
+  const sels=selects.map(s=>`<select id="f_${s.id}"><option value="">${s.all}</option>${s.options.map(o=>`<option>${o}</option>`).join("")}</select>`).join("");
+  return `<div class="filterbar">
+    <div class="search">🔍<input id="f_search" placeholder="${placeholder}"></div>
+    <div class="frow">${sels}<span class="lnk" id="f_reset">Reset</span></div>
+  </div><div class="resultcount" id="resultcount"></div>`;
+}
+function wireFilters(items, fields, predicate, render){
+  const get=()=>{ const v={q:(document.getElementById("f_search").value||"").toLowerCase()}; fields.forEach(f=>v[f]=document.getElementById("f_"+f).value); return v; };
+  const run=()=>{ const v=get(); const out=items.filter(it=>predicate(it,v)); render(out);
+    const rc=document.getElementById("resultcount"); if(rc) rc.textContent=`Showing ${out.length} of ${items.length}`; };
+  document.getElementById("f_search").addEventListener("input",run);
+  fields.forEach(f=>document.getElementById("f_"+f).addEventListener("change",run));
+  document.getElementById("f_reset").onclick=()=>{ document.getElementById("f_search").value=""; fields.forEach(f=>document.getElementById("f_"+f).value=""); run(); };
+  run();
 }
 
 /* ---------- PAGES ---------- */
@@ -442,10 +490,15 @@ const PAGES = {
         <div class="row"><div><div class="big amber">16</div><div class="sub">Completed</div></div>
         <div><div class="big amber">$606.9m</div><div class="sub">Total value</div></div></div></div>
     </div>
-    <div class="panel">
-      <h2 style="font-size:16px">Network sector breakdown</h2>
-      <p class="helper">Share of reported transactions by sector this year — the data behind the league tables.</p>
-      <div id="bars"></div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px" class="dash-cols">
+      <div class="panel"><h2 style="font-size:16px">Network sector breakdown</h2>
+        <p class="helper">Share of reported transactions by sector this year — the data behind the league tables.</p>
+        <div id="bars"></div></div>
+      <div class="panel"><h2 style="font-size:16px">Coming up</h2>
+        <p class="helper">Your next network events.</p>
+        <div style="border:none;box-shadow:none;padding:0" class="upcoming">${upcomingHtml(3)}</div>
+        <div style="margin-top:10px"><span class="lnk" style="color:var(--accent);cursor:pointer;font-weight:600;font-size:13px" onclick="navTo('events')">View calendar →</span></div>
+      </div>
     </div>
     <div class="panel" style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
       <div><b>Quarterly Transaction Reporting</b><div class="helper" style="margin:4px 0 0">E-sign your quarterly reporting letter before 26 June. (Demo — non-functional.)</div></div>
@@ -456,7 +509,7 @@ const PAGES = {
     const cols=["#16243d","#2f7fb0","#9b6dd6","#c98a2b","#2e9e6b","#5a8db0"];
     document.getElementById("bars").innerHTML = data.map((d,i)=>`
       <div style="display:flex;align-items:center;gap:12px;margin:9px 0">
-        <div style="width:200px;font-size:12.5px;color:var(--muted)">${d[0]}</div>
+        <div style="width:190px;font-size:12.5px;color:var(--muted)">${d[0]}</div>
         <div style="flex:1;background:#eef1f6;border-radius:6px;height:14px;overflow:hidden"><div style="width:${d[1]*2.4}%;height:100%;background:${cols[i]}"></div></div>
         <div style="width:36px;font-size:12px;text-align:right;font-weight:600">${d[1]}%</div>
       </div>`).join("");
@@ -464,18 +517,22 @@ const PAGES = {
 
   opportunities:{ title:"Opportunities", html(){
     return tabs(["Active Opportunities","My Opportunities","+ Create a New Opportunity"],0,2)
-      + filterBar(["All Deal Types","All Mandates","Member","Deal Size","All Regions","All Sectors"])
-      + `<div class="grid">${OPPS.map(o=>`
-        <div class="ocard"><h3>${o.project}</h3><div class="date">${o.date}</div>
-          <dl>
-            <dt>Status</dt><dd><span class="badge active">Active</span></dd>
-            <dt>Member firm</dt><dd>${o.firm}</dd>
-            <dt>Deal type</dt><dd>${o.type}</dd>
-            <dt>Mandate</dt><dd>${o.mandate}</dd>
-            <dt>Est. value</dt><dd>${o.value}</dd>
-            <dt>Deal file</dt><dd>${o.file}</dd>
-            <dt>Region</dt><dd>${o.region}</dd>
-          </dl></div>`).join("")}</div>`;
+      + filterBar("Search opportunities…",[
+          {id:"type",all:"All deal types",options:["Buy-side","Sell-side"]},
+          {id:"region",all:"All regions",options:REGIONS_F},
+          {id:"sector",all:"All sectors",options:SECTORS6}])
+      + `<div class="grid" id="grid"></div>`;
+  }, mount(){
+    const grid=document.getElementById("grid");
+    const card=o=>`<div class="ocard"><h3>${o.project}</h3><div class="date">${o.date}</div>
+      <dl><dt>Status</dt><dd><span class="badge active">Active</span></dd>
+      <dt>Member firm</dt><dd>${o.firm}</dd><dt>Deal type</dt><dd>${o.type}</dd>
+      <dt>Mandate</dt><dd>${o.mandate}</dd><dt>Est. value</dt><dd>${o.value}</dd>
+      <dt>Sector</dt><dd>${o.sector}</dd><dt>Region</dt><dd>${o.region}</dd></dl></div>`;
+    wireFilters(OPPS,["type","region","sector"],
+      (o,v)=>(!v.q||(o.project+o.firm).toLowerCase().includes(v.q))&&(!v.type||o.type===v.type)&&(!v.region||o.region===v.region)&&(!v.sector||o.sector===v.sector),
+      list=> grid.innerHTML = list.length?list.map(card).join(""):`<div class="empty">No opportunities match your filters.</div>`);
+    document.querySelectorAll('[data-tab]').forEach(t=>{ if(t.dataset.tab==="2") t.onclick=openOppWizard; });
   }},
 
   transactions:{ title:"Transactions", html(){
@@ -488,59 +545,66 @@ const PAGES = {
         <div><div class="big amber">$606.9m</div><div class="sub">Total value</div></div></div></div>
     </div>`
       + tabs(["All Transactions","My Transactions","+ Submit a New Transaction"],0,2)
-      + filterBar(["All Regions","All Sectors","All Sub-sectors"])
-      + `<div class="grid">${TXNS.map(t=>`
-        <div class="tcard">
-          <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.firm}</span></div>
-          <div class="yr">${t.year}</div>
-          <div class="body">
-            <div class="client">${t.client}</div>
-            <div class="logo">${t.logo}</div>
-            <div class="verb">${t.verb}</div>
-            <div class="desc">${t.desc}</div>
-          </div>
-        </div>`).join("")}</div>`;
+      + filterBar("Search by client, buyer or firm…",[
+          {id:"sector",all:"All sectors",options:SECTORS6},
+          {id:"region",all:"All regions",options:REGIONS_F}])
+      + `<div class="grid" id="grid"></div>`;
   }, mount(){
-    // wire the CTA tab to launch the wizard
-    document.querySelectorAll('[data-tab]').forEach(t=>{
-      if(t.dataset.tab==="2") t.onclick=openWizard;
-    });
+    const grid=document.getElementById("grid");
+    const card=(t,i)=>`<div class="tcard" data-txn="${i}">
+      <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.firm}</span></div>
+      <div class="yr">${t.year}</div>
+      <div class="body"><div class="client">${t.client}</div><div class="logo">${t.logo}</div>
+      <div class="verb">${t.verb}</div><div class="desc">${t.desc}</div></div></div>`;
+    wireFilters(TXNS.map((t,i)=>({...t,_i:i})),["sector","region"],
+      (t,v)=>(!v.q||(t.client+t.firm+t.buyer+t.desc).toLowerCase().includes(v.q))&&(!v.sector||t.sector===v.sector)&&(!v.region||t.region===v.region),
+      list=>{ grid.innerHTML=list.length?list.map(t=>card(t,t._i)).join(""):`<div class="empty">No transactions match your filters.</div>`;
+        grid.querySelectorAll("[data-txn]").forEach(c=>c.onclick=()=>showTxn(parseInt(c.dataset.txn))); });
+    document.querySelectorAll('[data-tab]').forEach(t=>{ if(t.dataset.tab==="2") t.onclick=openWizard; });
   }},
 
   directory:{ title:"Directory", html(){
     return tabs(["Member Firms","Users","Favourites"],0)
-      + `<div class="mapbox" id="map">Member firms across the network</div>`
-      + filterBar(["All Sectors","All Regions"])
-      + `<div class="grid">${FIRMS.map(f=>`
-        <div class="fcard"><div class="logo">${f.logo}</div><h3>${f.name}</h3><p>${f.loc}</p></div>`).join("")}</div>`;
+      + `<div class="mapbox" id="map"><span class="cap">55 member firms across the network</span></div>`
+      + filterBar("Search firms…",[{id:"region",all:"All regions",options:REGIONS_F}])
+      + `<div class="grid" id="grid"></div>`;
   }, mount(){
     const map=document.getElementById("map");
-    FIRMS.forEach(f=>{ const p=document.createElement("div"); p.className="pin"; p.style.left=f.x; p.style.top=f.y; p.title=f.name; map.appendChild(p); });
+    FIRMS.forEach(f=>{ const p=document.createElement("div"); p.className="pin"; p.style.left=f.x; p.style.top=f.y; p.title=f.name+" — "+f.loc; map.appendChild(p); });
+    const grid=document.getElementById("grid");
+    const card=f=>`<div class="fcard"><div class="logo">${f.logo}</div><h3>${f.name}</h3><p>${f.loc}</p></div>`;
+    wireFilters(FIRMS,["region"],
+      (f,v)=>(!v.q||(f.name+f.loc).toLowerCase().includes(v.q))&&(!v.region||f.region===v.region),
+      list=> grid.innerHTML=list.length?list.map(card).join(""):`<div class="empty">No firms match your filters.</div>`);
   }},
 
   events:{ title:"Events Calendar", html(){
     const dow=["M","T","W","T","F","S","S"];
-    // June 2026 starts on a Monday
-    let cells="";
-    dow.forEach(d=>cells+=`<div class="dow">${d}</div>`);
-    for(let n=1;n<=30;n++){
-      const ev=EVENTS.find(e=>e.day===n);
-      cells+=`<div class="day"><div class="n">${n}</div>${ev?`<div class="ev" style="background:${ev.cat}">${ev.t}</div>`:""}</div>`;
-    }
+    let cells=""; dow.forEach(d=>cells+=`<div class="dow">${d}</div>`);
+    for(let n=1;n<=30;n++){ const ev=EVENTS.find(e=>e.day===n);
+      cells+=`<div class="day"><div class="n">${n}</div>${ev?`<div class="ev" style="background:${ev.cat}" title="${ev.t}">${ev.t}</div>`:""}</div>`; }
     return `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-ghost">Request to add event</button></div>
       <div class="legend">${EVENT_CATS.map(c=>`<span class="lg"><span class="dot" style="background:${c[1]}"></span>${c[0]}</span>`).join("")}</div>
-      <div class="panel" style="padding:18px"><div style="font-weight:650;margin-bottom:12px">June 2026</div>
-      <div class="cal">${cells}</div></div>`;
+      <div class="eventslayout">
+        <div class="panel" style="padding:18px"><div style="font-weight:650;margin-bottom:12px">June 2026</div><div class="cal">${cells}</div></div>
+        <div class="upcoming"><h3>Upcoming</h3>${upcomingHtml(5)}</div>
+      </div>`;
   }},
 
   content:{ title:"Content", html(){
     return `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-ghost">Request to add content</button></div>`
-      + filterBar(["All Regions","All Countries","Content Type","All Tags"])
-      + `<div class="grid">${CONTENT.map(c=>`
-        <div class="ccard"><div class="tag">${c.tag}</div><div class="in">
-          <div class="date">${c.date}</div><h3>${c.title}</h3>
-          <div class="meta"><span>Sector</span><span>${c.sector}</span><span>Language</span><span>${c.lang}</span></div>
-        </div></div>`).join("")}</div>`;
+      + filterBar("Search content…",[
+          {id:"sector",all:"All sectors",options:SECTORS6.concat(["Multiple"])},
+          {id:"type",all:"All types",options:["Conference Materials","Sector Report","Workshop Materials"]}])
+      + `<div class="grid" id="grid"></div>`;
+  }, mount(){
+    const grid=document.getElementById("grid");
+    const card=c=>`<div class="ccard"><div class="tag">${c.tag}</div><div class="in">
+      <div class="date">${c.date}</div><h3>${c.title}</h3>
+      <div class="meta"><span>Sector</span><span>${c.sector}</span><span>Language</span><span>${c.lang}</span></div></div></div>`;
+    wireFilters(CONTENT,["sector","type"],
+      (c,v)=>(!v.q||c.title.toLowerCase().includes(v.q))&&(!v.sector||c.sector===v.sector)&&(!v.type||c.tag===v.type),
+      list=> grid.innerHTML=list.length?list.map(card).join(""):`<div class="empty">No content matches your filters.</div>`);
   }},
 
   notifications:{ title:"Notifications", html(){
@@ -554,10 +618,9 @@ const PAGES = {
     return `<div class="setcard">
       <h2 style="margin-top:0;font-size:17px">Profile &amp; preferences</h2>
       <p class="helper">Demo only — nothing here is saved.</p>
-      <div class="setrow"><label>Name</label><input value="Brendan Cockram"></div>
       <div class="setrow"><label>Member firm</label><input value="Octavian Group"></div>
-      <div class="setrow"><label>Email</label><input value="brendan@octaviangroup.com.au"></div>
-      <div class="setrow"><label>Primary region</label><select><option>Asia-Pacific</option></select></div>
+      <div class="setrow"><label>Primary region</label><select>${opt(REGIONS_F,"Asia-Pacific")}</select></div>
+      <div class="setrow"><label>Focus sectors</label><select>${opt(SECTORS6,"Industrials")}</select></div>
       <div class="setrow"><label>Email notifications</label>
         <div class="toggle"><button class="on">On</button><button>Off</button></div></div>
       <div style="margin-top:18px"><button class="btn btn-primary">Save changes</button></div>
@@ -566,37 +629,145 @@ const PAGES = {
 
   logout:{ title:"Logout", html(){
     return `<div class="panel" style="text-align:center;padding:50px"><h2>You'd be logged out here</h2>
-      <p class="helper">This is a demo — there's no real session. <span class="lnk" onclick="navTo('dashboard')">Back to dashboard</span></p></div>`;
+      <p class="helper">This is a demo — there's no real session. <span class="lnk" style="color:var(--accent);cursor:pointer" onclick="navTo('dashboard')">Back to dashboard</span></p></div>`;
   }}
 };
+
+/* ---------- upcoming events list ---------- */
+function upcomingHtml(n){
+  return EVENTS.slice(0,n).map(e=>`<div class="u">
+    <div class="dt"><div class="d">${e.day}</div><div class="m">Jun</div></div>
+    <div><div class="ti">${e.t}</div><div class="sub">${e.catName} · ${e.time}</div></div></div>`).join("");
+}
+
+/* ---------- transaction detail view ---------- */
+function showTxn(i){
+  const t=TXNS[i]; const page=document.getElementById("page");
+  document.getElementById("pageTitle").textContent="Transaction";
+  page.innerHTML=`<div class="wizbar"><span class="t">${t.client}</span><button class="close" id="back">‹ Back to transactions</button></div>
+    <div class="detail">
+      <div class="panel">
+        <h2 style="font-size:18px;margin-bottom:2px">${t.client}</h2>
+        <p class="helper">${t.desc}</p>
+        <dl>
+          <dt>Deal type</dt><dd>${t.side}</dd>
+          <dt>${t.side==="Sell-side"?"Buyer / Acquirer":t.side==="Buy-side"?"Acquirer (our client)":"Counterparty"}</dt><dd>${t.buyer}</dd>
+          <dt>Advised by</dt><dd>${t.firm}</dd>
+          <dt>Sector</dt><dd>${t.sector}</dd>
+          <dt>Region</dt><dd>${t.region}</dd>
+          <dt>Year</dt><dd>${t.year}</dd>
+          <dt>Enterprise Value</dt><dd>${t.ev}</dd>
+          <dt>EV / EBITDA</dt><dd>${t.ebitda}</dd>
+          <dt>EV / Revenue</dt><dd>${t.rev}</dd>
+        </dl>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600">Tombstone</div>
+        <div class="tombstone"><div class="tt-head">GLOBALSCOPE</div>
+          <div class="tt-body"><div style="height:46px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line);border-radius:8px;margin:0 auto 12px;max-width:200px;font-weight:800;color:#33506f">${t.logo}</div>
+          <div style="font-style:italic;color:var(--muted);font-size:13px;margin:10px 0">${t.verb}</div>
+          <div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px">${t.region} · ${t.year} · ${t.sector}</div></div></div>
+      </div>
+    </div>`;
+  document.getElementById("back").onclick=()=>navTo("transactions");
+  closeNav(); window.scrollTo({top:0});
+}
+
+/* ---------- Create-an-Opportunity flow (wizard-style) ---------- */
+const OPP_STEPS=["Type","Details","Review"];
+let oState={step:0, data:{}};
+function openOppWizard(){ oState={step:0,data:{file:"Public",mandate:"Not yet"}}; renderOpp(); }
+function oStepper(active){
+  let h='<div class="stepper">';
+  OPP_STEPS.forEach((n,i)=>{ const cls=i<active?"done":(i===active?"current":""); h+=`<div class="step ${cls}"><div class="dot">${i<active?'✓':i+1}</div><span>${n}</span></div>`; if(i<OPP_STEPS.length-1)h+=`<div class="bar ${i<active?'done':''}"></div>`; });
+  return h+'</div>';
+}
+function oHost(inner){
+  const page=document.getElementById("page");
+  document.getElementById("pageTitle").textContent="Create a New Opportunity";
+  page.innerHTML=`<div class="wizbar"><span class="t">Create a New Opportunity</span><button class="close" id="oClose">✕ Close</button></div>${inner}`;
+  document.getElementById("oClose").onclick=()=>navTo("opportunities");
+  window.scrollTo({top:0});
+}
+function renderOpp(){
+  if(oState.step===0){
+    oHost(oStepper(0)+`<div class="panel"><h2>What are you posting?</h2>
+      <p class="lead">Opportunities surface mandates to the network. Start by telling us which side you're on — we'll tailor the rest.</p>
+      <div class="field"><label>Which side are you advising?</label>
+        <p class="helper">This frames the opportunity and drives who it's matched to.</p>
+        <div class="choices">
+          <div class="choice ${oState.data.type==='Sell-side'?'sel':''}" data-v="Sell-side"><div class="ch-t">Sell-side</div><div class="ch-d">We're advising a company being sold — seeking buyers across the network.</div></div>
+          <div class="choice ${oState.data.type==='Buy-side'?'sel':''}" data-v="Buy-side"><div class="ch-t">Buy-side</div><div class="ch-d">We're advising an acquirer — seeking targets that fit a mandate.</div></div>
+        </div></div>
+      <div class="actions"><div></div><div><button class="btn btn-primary" id="oNext">Continue ›</button></div></div></div>`);
+    document.querySelectorAll('.choice[data-v]').forEach(c=>c.onclick=()=>{ oState.data.type=c.dataset.v; document.querySelectorAll('.choice[data-v]').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); });
+    document.getElementById("oNext").onclick=()=>{ if(!oState.data.type){ pulse(); return;} oState.step=1; renderOpp(); };
+  } else if(oState.step===1){
+    const d=oState.data;
+    oHost(oStepper(1)+`<div class="panel"><h2>Opportunity details</h2>
+      <p class="lead">Just enough for members to gauge fit. Keep the client confidential — use a project codename.</p>
+      <div class="field"><label>Project codename <span class="req">*</span></label><p class="helper">A neutral name that doesn't identify the client (e.g. "Project Pulse").</p><input type="text" id="o_name" value="${d.name||''}" placeholder="Project …"></div>
+      <div class="row2">
+        <div class="field"><label>Sector <span class="req">*</span></label><p class="helper">Aligns to the league-table taxonomy.</p><select id="o_sector"><option value="">Select…</option>${opt(SECTORS6,d.sector)}</select></div>
+        <div class="field"><label>Region <span class="req">*</span></label><p class="helper">Where the target / client is based.</p><select id="o_region"><option value="">Select…</option>${opt(REGIONS_F,d.region)}</select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Estimated value</label><p class="helper">A band is fine — signals scale without disclosing specifics.</p><select id="o_value"><option value="">Select…</option>${opt(VALUE_BANDS,d.value)}</select></div>
+        <div class="field"><label>Mandate status</label><p class="helper">How firm is your engagement on this deal?</p><select id="o_mandate">${opt(["Not yet","Exclusive","Co-exclusive"],d.mandate)}</select></div>
+      </div>
+      <div class="field"><label>Deal file visibility</label><p class="helper">Public = any member can view; On request = members ask you; Confidential = hidden until you share.</p>
+        <div class="choices yn">
+          ${["Public","On request","Confidential"].map(o=>`<div class="choice file ${d.file===o?'sel':''}" data-f="${o}"><div class="ch-t">${o}</div></div>`).join("")}
+        </div></div>
+      <div class="actions"><button class="btn btn-ghost" id="oBack">‹ Back</button><button class="btn btn-primary" id="oNext">Review ›</button></div></div>`);
+    document.querySelectorAll('.choice.file').forEach(c=>c.onclick=()=>{ oState.data.file=c.dataset.f; document.querySelectorAll('.choice.file').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); });
+    document.getElementById("oBack").onclick=()=>{ saveOpp(); oState.step=0; renderOpp(); };
+    document.getElementById("oNext").onclick=()=>{ saveOpp(); if(!oState.data.name||!oState.data.sector||!oState.data.region){ pulse(); return;} oState.step=2; renderOpp(); };
+  } else {
+    const d=oState.data;
+    oHost(oStepper(2)+`<div class="panel"><h2>Review &amp; post</h2>
+      <p class="lead">This is how your opportunity will appear to the network.</p>
+      <div class="ocard" style="max-width:340px;margin-bottom:18px"><h3>${d.name||"Project"}</h3><div class="date">Today</div>
+        <dl><dt>Status</dt><dd><span class="badge active">Active</span></dd><dt>Member firm</dt><dd>Octavian Group</dd>
+        <dt>Deal type</dt><dd>${d.type}</dd><dt>Mandate</dt><dd>${d.mandate}</dd><dt>Est. value</dt><dd>${d.value||"—"}</dd>
+        <dt>Sector</dt><dd>${d.sector}</dd><dt>Region</dt><dd>${d.region}</dd><dt>Deal file</dt><dd>${d.file}</dd></dl></div>
+      <div class="actions"><button class="btn btn-ghost" id="oBack">‹ Back</button><button class="btn btn-primary" id="oPost">Post opportunity ✓</button></div></div>`);
+    document.getElementById("oBack").onclick=()=>{ oState.step=1; renderOpp(); };
+    document.getElementById("oPost").onclick=()=>{
+      oHost(`<div class="panel"><div class="confirm"><div class="ok">✓</div><h2>Opportunity posted</h2>
+        <p>It's now visible to the network (demo — nothing was saved). Matching members will be notified.</p>
+        <div style="display:flex;gap:12px;justify-content:center"><button class="btn btn-primary" id="oDone">Back to Opportunities</button></div></div></div>`);
+      document.getElementById("oDone").onclick=()=>navTo("opportunities");
+    };
+  }
+}
+function saveOpp(){ const g=id=>{const e=document.getElementById(id);return e?e.value:undefined;};
+  const n=g("o_name"); if(n!==undefined)oState.data.name=n; const s=g("o_sector"); if(s!==undefined)oState.data.sector=s;
+  const r=g("o_region"); if(r!==undefined)oState.data.region=r; const v=g("o_value"); if(v!==undefined)oState.data.value=v;
+  const m=g("o_mandate"); if(m!==undefined)oState.data.mandate=m; }
+function pulse(){ const n=document.querySelector(".panel"); if(n){ n.style.boxShadow="0 0 0 2px #d8584a"; setTimeout(()=>n.style.boxShadow="",600);} }
 
 /* ---------- router ---------- */
 function navTo(r){ const t="#/"+r; if(location.hash===t){ route(); } else { location.hash=t; } }
 function currentRoute(){ return (location.hash.replace(/^#\/?/,"")||"dashboard"); }
+function closeNav(){ document.getElementById("app").classList.remove("nav-open"); }
 function route(){
-  const r = currentRoute();
-  const p = PAGES[r] || PAGES.dashboard;
-  document.getElementById("pageTitle").textContent = p.title;
-  document.getElementById("page").innerHTML = p.html();
+  const r=currentRoute(); const p=PAGES[r]||PAGES.dashboard;
+  document.getElementById("pageTitle").textContent=p.title;
+  document.getElementById("page").innerHTML=p.html();
   document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active", a.dataset.route===r));
   if(p.mount) p.mount();
-  document.querySelector(".content").scrollTo?.({top:0});
-  window.scrollTo({top:0});
+  closeNav(); window.scrollTo({top:0});
 }
-document.getElementById("nav").addEventListener("click",e=>{
-  const a=e.target.closest("a[data-route]"); if(!a) return;
-  e.preventDefault(); navTo(a.dataset.route);
-});
-// in-page tab switching (cosmetic) for non-CTA tabs
-document.getElementById("page").addEventListener("click",e=>{
-  const t=e.target.closest(".tab"); if(!t || t.classList.contains("cta")) return;
-  const wrap=t.parentElement; wrap.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active");
-});
+document.getElementById("nav").addEventListener("click",e=>{ const a=e.target.closest("a[data-route]"); if(!a)return; e.preventDefault(); navTo(a.dataset.route); });
+document.getElementById("page").addEventListener("click",e=>{ const t=e.target.closest(".tab"); if(!t||t.classList.contains("cta"))return; t.parentElement.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active"); });
+document.getElementById("hamburger").onclick=()=>document.getElementById("app").classList.toggle("nav-open");
+document.getElementById("scrim").onclick=closeNav;
 
-/* ---------- launch the transaction wizard inside the shell ---------- */
+/* ---------- launch transaction wizard ---------- */
 function openWizard(){
   const page=document.getElementById("page");
-  page.innerHTML = `<div class="wizbar"><span class="t">Submit a New Transaction</span><button class="close" id="wizClose">✕ Close</button></div><div id="wizardMount"></div>`;
+  page.innerHTML=`<div class="wizbar"><span class="t">Submit a New Transaction</span><button class="close" id="wizClose">✕ Close</button></div><div id="wizardMount"></div>`;
   document.getElementById("wizClose").onclick=()=>navTo("transactions");
   document.getElementById("pageTitle").textContent="Submit a New Transaction";
   GSWizard.open(document.getElementById("wizardMount"), ()=>navTo("transactions"));
@@ -607,7 +778,7 @@ window.addEventListener("hashchange", route);
 /* ===== WIZARD_JS (injected module: window.GSWizard) ===== */
 window.GSWizard=(function(){
 let content; let EXIT=null;
-function open(mountEl,onExit){ content=mountEl; EXIT=onExit; state={ type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } }; render(); }
+function open(mountEl,onExit){ content=mountEl; EXIT=onExit; state={ type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } }; render(); }
 
 
 /* ============================================================
@@ -713,7 +884,7 @@ const SCHEMA = {
           { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
             helper:"The firm(s) you partnered with.", showIf:{f:"collab",eq:true} },
           { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
-            source:["You (Brendan Cockram)","Add a colleague…"],
+            source:["You","Add a colleague…"],
             helper:"Tagged members get the deal on their track record." },
           { id:"verb", label:"Tombstone wording", type:"text",
             helper:"Auto-suggested. Edit if you'd word it differently." }
@@ -788,7 +959,7 @@ const SCHEMA = {
           { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
             helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
           { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
-            source:["You (Brendan Cockram)","Add a colleague…"],
+            source:["You","Add a colleague…"],
             helper:"Tagged members get the deal on their track record." },
           { id:"verb", label:"Tombstone wording", type:"text",
             helper:"Auto-suggested. Edit freely." }
@@ -857,7 +1028,7 @@ const SCHEMA = {
           { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
             helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
           { id:"tagged", label:"Tag the people who worked on this engagement", type:"chips",
-            source:["You (Brendan Cockram)","Add a colleague…"],
+            source:["You","Add a colleague…"],
             helper:"Tagged members get the engagement on their track record." }
         ]
       }
@@ -869,10 +1040,10 @@ const STEP_NAMES = ["Type","Parties & role","Details","Financials","Recognition"
 
 /* ---------------- state ---------------- */
 let state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
-             discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } };
+             discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } };
 
 const $ = sel => document.querySelector(sel);
-/* content provided by open() */
+/* content via open() */
 
 /* ---------------- render entry ---------------- */
 function render(){
@@ -1487,7 +1658,7 @@ function renderConfirm(){
   <div class="panel"><div class="confirm">
     <div class="ok">✓</div>
     <h2>Transaction submitted</h2>
-    <p>Thanks, Brendan. Your submission is with the Globalscope team for review. You'll be notified when it's live — usually within one business day.</p>
+    <p>Thanks. Your submission is with the Globalscope team for review. You'll be notified when it's live — usually within one business day.</p>
     <div style="display:flex;gap:12px;justify-content:center">
       <button class="btn btn-ghost" id="wzAnother">Report another</button>
       <button class="btn btn-primary" id="wzDone">Back to Transactions</button>
@@ -1499,7 +1670,7 @@ function renderConfirm(){
 }
 function resetAll(){
   state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
-            discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } };
+            discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } };
   render();
 }
 
