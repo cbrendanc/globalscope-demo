@@ -279,6 +279,26 @@
 .ocard dd{margin:0;font-size:12.5px;text-align:right}
 .badge{display:inline-block;border-radius:20px;font-size:10.5px;font-weight:700;padding:3px 10px}
 .badge.active{background:var(--green-soft);color:#1c7a4f}
+.teaserchip{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent-d);border-radius:7px;padding:5px 10px;font-size:11.5px;font-weight:600}
+.highlights{margin:0;padding-left:18px}
+.highlights li{margin:5px 0;font-size:13.5px}
+.teaserpanel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px}
+/* richer opportunity deal card */
+.deal-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;overflow:hidden;transition:transform .12s,box-shadow .12s}
+.deal-card:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(22,36,61,.12)}
+.deal-card .dc-top{display:flex;align-items:center;gap:8px;padding:14px 16px 0}
+.deal-pill{font-size:10.5px;font-weight:700;letter-spacing:.4px;border-radius:6px;padding:3px 8px}
+.deal-pill.sell{background:#eaf4ee;color:#1c7a4f}
+.deal-pill.buy{background:#e8f0f8;color:#246390}
+.deal-card .dc-date{margin-left:auto;font-size:11px;color:var(--muted)}
+.deal-card h3{margin:11px 16px 2px;font-size:16px}
+.deal-card .dc-firm{margin:0 16px;font-size:12px;color:var(--muted)}
+.deal-card .dc-desc{margin:11px 16px 0;font-size:12.5px;color:var(--ink);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.deal-card .dc-tags{display:flex;flex-wrap:wrap;gap:6px;margin:13px 16px}
+.dc-tag{background:#f0f3f8;color:#4c5b74;border-radius:6px;padding:3px 8px;font-size:11px}
+.deal-card .dc-foot{margin-top:auto;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.deal-card .dc-foot .view{color:var(--accent);font-weight:600}
+.dc-teaser{display:inline-flex;align-items:center;gap:5px;color:var(--accent-d);font-size:11.5px;font-weight:600}
 
 /* firm card */
 .fcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;text-align:center}
@@ -420,10 +440,14 @@ const TXNS = [
   {client:"FreshFields Foods", logo:"FRESH", firm:"AWR Lloyd", flags:"🇹🇭 🇸🇬", year:"2025", verb:"Sold to", buyer:"Asia Consumer Partners", side:"Sell-side", sector:"Consumer", region:"Asia-Pacific", ev:"USD 48,000,000", ebitda:"7.5x", rev:"1.1x", desc:"Cross-border sale of a food-processing business to a regional consumer group."}
 ];
 const OPPS = [
-  {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"€100M+", file:"Public", region:"South Asia", sector:"TMT"},
-  {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€20M", file:"Public", region:"Latin America & Caribbean", sector:"Industrials"},
-  {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"< €5M", file:"Public", region:"Asia-Pacific", sector:"Industrials"},
-  {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer"}
+  {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"€100M+", file:"Public", region:"South Asia", sector:"TMT",
+   desc:"A profitable, founder-led enterprise software business serving banking clients across South Asia. Shareholders are exploring a full sale to a strategic or financial buyer to support the next phase of growth.", highlights:["≈ €18m ARR, growing 30% YoY","Blue-chip banking customer base, <5% churn","Experienced management team staying on"], teaser:"Project-HiTech-Teaser.pdf"},
+  {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€20M", file:"Public", region:"Latin America & Caribbean", sector:"Industrials",
+   desc:"On behalf of a European industrials group, seeking bolt-on acquisition targets in precision components across Latin America. Open to majority or 100% stakes.", highlights:["Active acquirer, funded and ready","Seeking €5–20m EV targets","Management retention preferred"], teaser:"Voyager-Buy-Mandate.pdf"},
+  {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"< €5M", file:"Public", region:"Asia-Pacific", sector:"Industrials",
+   desc:"Sale of a specialist electrical engineering contractor in Australia with a strong recurring maintenance book and blue-chip resources-sector clients.", highlights:["Recurring revenue ≈ 60% of sales","Long-standing tier-1 client relationships","Clean balance sheet"], teaser:"Project-Pulse-IM.pdf"},
+  {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer",
+   desc:"A North American consumer group seeking acquisitions in premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null}
 ];
 const FIRMS = [
   {name:"Octavian Group", loc:"Sydney, Australia", region:"Asia-Pacific", logo:"OCTAVIAN", x:"83%", y:"80%"},
@@ -525,14 +549,18 @@ const PAGES = {
       + `<div class="grid" id="grid"></div>`;
   }, mount(){
     const grid=document.getElementById("grid");
-    const card=o=>`<div class="ocard"><h3>${o.project}</h3><div class="date">${o.date}</div>
-      <dl><dt>Status</dt><dd><span class="badge active">Active</span></dd>
-      <dt>Member firm</dt><dd>${o.firm}</dd><dt>Deal type</dt><dd>${o.type}</dd>
-      <dt>Mandate</dt><dd>${o.mandate}</dd><dt>Est. value</dt><dd>${o.value}</dd>
-      <dt>Sector</dt><dd>${o.sector}</dd><dt>Region</dt><dd>${o.region}</dd></dl></div>`;
-    wireFilters(OPPS,["type","region","sector"],
-      (o,v)=>(!v.q||(o.project+o.firm).toLowerCase().includes(v.q))&&(!v.type||o.type===v.type)&&(!v.region||o.region===v.region)&&(!v.sector||o.sector===v.sector),
-      list=> grid.innerHTML = list.length?list.map(card).join(""):`<div class="empty">No opportunities match your filters.</div>`);
+    const card=o=>`<div class="deal-card" data-opp="${o._i}">
+      <div class="dc-top"><span class="deal-pill ${o.type==='Sell-side'?'sell':'buy'}">${o.type}</span><span class="badge active">Active</span><span class="dc-date">${o.date}</span></div>
+      <h3>${o.project}</h3>
+      <div class="dc-firm">${o.firm} · ${o.mandate}</div>
+      <div class="dc-desc">${o.desc||''}</div>
+      <div class="dc-tags"><span class="dc-tag">${o.sector}</span><span class="dc-tag">${o.region}</span><span class="dc-tag">${o.value}</span></div>
+      <div class="dc-foot">${o.teaser?`<span class="dc-teaser">📎 Teaser</span>`:`<span></span>`}<span class="view">View details ›</span></div>
+    </div>`;
+    wireFilters(OPPS.map((o,i)=>({...o,_i:i})),["type","region","sector"],
+      (o,v)=>(!v.q||(o.project+o.firm+(o.desc||"")).toLowerCase().includes(v.q))&&(!v.type||o.type===v.type)&&(!v.region||o.region===v.region)&&(!v.sector||o.sector===v.sector),
+      list=>{ grid.innerHTML = list.length?list.map(card).join(""):`<div class="empty">No opportunities match your filters.</div>`;
+        grid.querySelectorAll("[data-opp]").forEach(c=>c.onclick=()=>showOpp(parseInt(c.dataset.opp))); });
     document.querySelectorAll('[data-tab]').forEach(t=>{ if(t.dataset.tab==="2") t.onclick=openOppWizard; });
   }},
 
@@ -674,6 +702,45 @@ function showTxn(i){
   closeNav(); window.scrollTo({top:0});
 }
 
+/* ---------- opportunity detail view + teaser download ---------- */
+function showOpp(i){
+  const o=OPPS[i]; const page=document.getElementById("page");
+  document.getElementById("pageTitle").textContent="Opportunity";
+  const hl=(o.highlights||[]).map(h=>`<li>${h}</li>`).join("");
+  page.innerHTML=`<div class="wizbar"><span class="t">${o.project}</span><button class="close" id="back">‹ Back to opportunities</button></div>
+    <div class="detail">
+      <div class="panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px"><h2 style="font-size:18px;margin:0">${o.project}</h2><span class="badge active">Active</span></div>
+        <p class="helper" style="margin-top:2px">${o.firm} · ${o.type} · posted ${o.date}</p>
+        <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 0 6px">Overview</h3>
+        <p style="font-size:14px;line-height:1.6;margin:0">${o.desc||"—"}</p>
+        ${hl?`<h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 0 6px">Key highlights</h3><ul class="highlights">${hl}</ul>`:''}
+        <dl style="margin-top:16px">
+          <dt>Deal type</dt><dd>${o.type}</dd><dt>Mandate</dt><dd>${o.mandate}</dd>
+          <dt>Estimated value</dt><dd>${o.value}</dd><dt>Sector</dt><dd>${o.sector}</dd>
+          <dt>Region</dt><dd>${o.region}</dd><dt>Deal file</dt><dd>${o.file}</dd>
+        </dl>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600">Teaser</div>
+        <div class="teaserpanel">
+          ${o.teaser?`<div style="display:flex;align-items:center;gap:11px;margin-bottom:14px"><div style="width:38px;height:46px;border-radius:6px;background:#eef3f8;display:flex;align-items:center;justify-content:center;font-size:18px">📄</div><div><div style="font-size:13px;font-weight:600">${o.teaser}</div><div class="helper" style="margin:0">PDF · visibility: ${o.file}</div></div></div>
+          <button class="btn btn-primary" style="width:100%" onclick="downloadTeaser('${o.teaser}')">Download teaser</button>`
+          :`<p class="helper" style="margin:0">No teaser attached to this opportunity.</p>`}
+          <p class="helper" style="margin-top:14px">Contact ${o.firm} through the network to discuss further.</p>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("back").onclick=()=>navTo("opportunities");
+  closeNav(); window.scrollTo({top:0});
+}
+function downloadTeaser(name){
+  const body="Globalscope demo teaser\n\nPlaceholder teaser document for the demo.\nIn the live app this would be the uploaded PDF: "+(name||"teaser");
+  const blob=new Blob([body],{type:"text/plain"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=(name||"teaser").replace(/\.[^.]+$/,"")+".txt"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+
 /* ---------- Create-an-Opportunity flow (wizard-style) ---------- */
 const OPP_STEPS=["Type","Details","Review"];
 let oState={step:0, data:{}};
@@ -716,14 +783,22 @@ function renderOpp(){
         <div class="field"><label>Estimated value</label><p class="helper">A band is fine — signals scale without disclosing specifics.</p><select id="o_value"><option value="">Select…</option>${opt(VALUE_BANDS,d.value)}</select></div>
         <div class="field"><label>Mandate status</label><p class="helper">How firm is your engagement on this deal?</p><select id="o_mandate">${opt(["Not yet","Exclusive","Co-exclusive"],d.mandate)}</select></div>
       </div>
+      <div class="field"><label>Opportunity overview <span class="req">*</span></label><p class="helper">An anonymised description members will read — the business, the rationale, and what you're seeking. Keep the client unidentifiable.</p><textarea id="o_desc" placeholder="Describe the opportunity…">${d.desc||''}</textarea></div>
+      <div class="field"><label>Key highlights</label><p class="helper">Optional. One per line — the punchy points that make this stand out (scale, growth, margins, strategic angle).</p><textarea id="o_high" placeholder="e.g. €12m revenue, 20% EBITDA margin&#10;Blue-chip customer base&#10;Founder seeking a clean exit">${(d.highlights||[]).join("\n")}</textarea></div>
+      <div class="field"><label>Teaser document</label><p class="helper">Upload a teaser (PDF) members can download to learn more. Its visibility follows the deal-file setting below.</p>
+        <div id="o_teaserwrap">${d.teaser?`<span class="mockfile">📎 ${d.teaser}</span> <span class="lnk" id="o_teaserclear" style="margin-left:10px;cursor:pointer;color:var(--accent)">Remove</span>`:`<label class="mockfile" style="cursor:pointer">📎 Choose a file (PDF, max 10 MB)<input type="file" id="o_teaser" accept=".pdf" style="display:none"></label>`}</div></div>
       <div class="field"><label>Deal file visibility</label><p class="helper">Public = any member can view; On request = members ask you; Confidential = hidden until you share.</p>
         <div class="choices yn">
           ${["Public","On request","Confidential"].map(o=>`<div class="choice file ${d.file===o?'sel':''}" data-f="${o}"><div class="ch-t">${o}</div></div>`).join("")}
         </div></div>
       <div class="actions"><button class="btn btn-ghost" id="oBack">‹ Back</button><button class="btn btn-primary" id="oNext">Review ›</button></div></div>`);
     document.querySelectorAll('.choice.file').forEach(c=>c.onclick=()=>{ oState.data.file=c.dataset.f; document.querySelectorAll('.choice.file').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); });
+    const tf=document.getElementById("o_teaser");
+    if(tf) tf.onchange=()=>{ const f=tf.files&&tf.files[0]; if(f){ oState.data.teaser=f.name; renderOpp(); } };
+    const tc=document.getElementById("o_teaserclear");
+    if(tc) tc.onclick=()=>{ oState.data.teaser=null; renderOpp(); };
     document.getElementById("oBack").onclick=()=>{ saveOpp(); oState.step=0; renderOpp(); };
-    document.getElementById("oNext").onclick=()=>{ saveOpp(); if(!oState.data.name||!oState.data.sector||!oState.data.region){ pulse(); return;} oState.step=2; renderOpp(); };
+    document.getElementById("oNext").onclick=()=>{ saveOpp(); if(!oState.data.name||!oState.data.sector||!oState.data.region||!oState.data.desc){ pulse(); return;} oState.step=2; renderOpp(); };
   } else {
     const d=oState.data;
     oHost(oStepper(2)+`<div class="panel"><h2>Review &amp; post</h2>
@@ -732,6 +807,9 @@ function renderOpp(){
         <dl><dt>Status</dt><dd><span class="badge active">Active</span></dd><dt>Member firm</dt><dd>Octavian Group</dd>
         <dt>Deal type</dt><dd>${d.type}</dd><dt>Mandate</dt><dd>${d.mandate}</dd><dt>Est. value</dt><dd>${d.value||"—"}</dd>
         <dt>Sector</dt><dd>${d.sector}</dd><dt>Region</dt><dd>${d.region}</dd><dt>Deal file</dt><dd>${d.file}</dd></dl></div>
+      <div style="max-width:560px;margin-bottom:18px"><h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 6px">Overview</h3><p style="font-size:13.5px;line-height:1.6;margin:0">${d.desc||'—'}</p>
+      ${(d.highlights&&d.highlights.length)?`<h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 6px">Key highlights</h3><ul class="highlights">${d.highlights.map(h=>`<li>${h}</li>`).join("")}</ul>`:''}
+      ${d.teaser?`<div class="teaserchip">📎 ${d.teaser}</div>`:`<p class="helper" style="margin-top:10px">No teaser attached.</p>`}</div>
       <div class="actions"><button class="btn btn-ghost" id="oBack">‹ Back</button><button class="btn btn-primary" id="oPost">Post opportunity ✓</button></div></div>`);
     document.getElementById("oBack").onclick=()=>{ oState.step=1; renderOpp(); };
     document.getElementById("oPost").onclick=()=>{
@@ -745,7 +823,9 @@ function renderOpp(){
 function saveOpp(){ const g=id=>{const e=document.getElementById(id);return e?e.value:undefined;};
   const n=g("o_name"); if(n!==undefined)oState.data.name=n; const s=g("o_sector"); if(s!==undefined)oState.data.sector=s;
   const r=g("o_region"); if(r!==undefined)oState.data.region=r; const v=g("o_value"); if(v!==undefined)oState.data.value=v;
-  const m=g("o_mandate"); if(m!==undefined)oState.data.mandate=m; }
+  const m=g("o_mandate"); if(m!==undefined)oState.data.mandate=m;
+  const ds=g("o_desc"); if(ds!==undefined)oState.data.desc=ds;
+  const hi=g("o_high"); if(hi!==undefined)oState.data.highlights=hi.split("\n").map(x=>x.trim()).filter(Boolean); }
 function pulse(){ const n=document.querySelector(".panel"); if(n){ n.style.boxShadow="0 0 0 2px #d8584a"; setTimeout(()=>n.style.boxShadow="",600);} }
 
 /* ---------- router ---------- */
