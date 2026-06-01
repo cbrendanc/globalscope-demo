@@ -256,10 +256,10 @@
 .tcard .top{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--muted)}
 .tcard .flags{font-size:15px;letter-spacing:1px}
 .tcard .firm{text-align:right;font-weight:600;letter-spacing:.4px;max-width:130px}
-.tcard .tt-in{padding:20px 16px 14px;text-align:center;flex:1;display:flex;flex-direction:column}
-.tcard .tt-party{font-weight:700;font-size:15px;color:#1f2a3a;line-height:1.3}
+.tcard .tt-in{padding:24px 18px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
+.tcard .tt-party{font-weight:700;font-size:16px;color:#1f2a3a;line-height:1.35}
 .tcard .tt-party.acq{color:#33506f}
-.tcard .tt-rel{font-style:italic;color:var(--muted);font-size:12px;margin:9px 0}
+.tcard .tt-rel{font-style:italic;color:var(--muted);font-size:12.5px;margin:12px 0}
 .tcard .tt-foot{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted);line-height:1.55}
 .tcard .tt-adv{color:var(--accent-d);font-weight:600}
 .tcard .side-pill{font-size:10px;font-weight:600;letter-spacing:.3px;border-radius:6px;padding:2px 8px}
@@ -495,6 +495,12 @@ const NOTIFS = [
 /* ---------- helpers ---------- */
 function opt(list,sel){ return list.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join(""); }
 function cap(str,n){ str=(str||'').trim(); return str.length>n?str.slice(0,n-1).trimEnd()+'…':str; }
+function dealLine(t){
+  if(t.side==="Buy-side")      return {a:t.acquirer, v:"acquired", b:t.target};
+  if(t.side==="Capital raise") return {a:t.target, v:"raised capital from", b:t.acquirer};
+  if(t.side==="Advisory")      return {a:t.target, v:"", b:""};
+  return {a:t.target, v:"acquired by", b:t.acquirer};
+}
 function tabs(items, activeIdx, ctaIdx){
   return `<div class="tabs">${items.map((t,i)=>`<div class="tab ${i===activeIdx?'active':''} ${i===ctaIdx?'cta':''}" data-tab="${i}">${t}</div>`).join("")}</div>`;
 }
@@ -592,14 +598,13 @@ const PAGES = {
       + `<div class="grid" id="grid"></div>`;
   }, mount(){
     const grid=document.getElementById("grid");
-    const sideCls=x=>x==="Sell-side"?"sell":x==="Buy-side"?"buy":x==="Capital raise"?"cap":"adv";
-    const card=(t,i)=>`<div class="tcard" data-txn="${i}">
-      <div class="top"><span class="flags">${t.flags}</span><span class="side-pill ${sideCls(t.side)}">${t.side}</span></div>
+    const card=(t,i)=>{const d=dealLine(t);return `<div class="tcard" data-txn="${i}">
+      <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.advisor}</span></div>
       <div class="tt-in">
-        <div class="tt-party">${t.target}</div>
-        ${t.acquirer?`<div class="tt-rel">${t.rel}</div><div class="tt-party acq">${t.acquirer}</div>`:`<div class="tt-rel">Strategic advisory</div>`}
-        <div class="tt-foot">${t.region} · ${t.year} · ${t.sector}<br><span class="tt-adv">Advised by ${t.advisor}</span></div>
-      </div></div>`;
+        <div class="tt-party">${d.a}</div>
+        ${d.b?`<div class="tt-rel">${d.v}</div><div class="tt-party acq">${d.b}</div>`:`<div class="tt-rel">Strategic advisory</div>`}
+        <div class="tt-foot">${t.region} · ${t.year} · ${t.sector}</div>
+      </div></div>`;};
     wireFilters(TXNS.map((t,i)=>({...t,_i:i})),["sector","region"],
       (t,v)=>(!v.q||(t.target+t.acquirer+t.advisor+t.desc).toLowerCase().includes(v.q))&&(!v.sector||t.sector===v.sector)&&(!v.region||t.region===v.region),
       list=>{ grid.innerHTML=list.length?list.map(t=>card(t,t._i)).join(""):`<div class="empty">No transactions match your filters.</div>`;
@@ -686,7 +691,7 @@ function upcomingHtml(n){
 
 /* ---------- transaction detail view ---------- */
 function showTxn(i){
-  const t=TXNS[i]; const page=document.getElementById("page");
+  const t=TXNS[i]; const page=document.getElementById("page"); const dl=dealLine(t);
   document.getElementById("pageTitle").textContent="Transaction";
   const partyRows = t.acquirer
     ? `<dt>Target</dt><dd>${t.target}</dd><dt>${t.side==="Capital raise"?"Investor":"Acquirer"}</dt><dd>${t.acquirer}</dd>`
@@ -712,8 +717,8 @@ function showTxn(i){
         <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600">Tombstone</div>
         <div class="tombstone"><div class="tt-head">GLOBALSCOPE</div>
           <div class="tt-body" style="text-align:center">
-            <div style="font-weight:700;font-size:15px;color:#1f2a3a">${t.target}</div>
-            ${t.acquirer?`<div style="font-style:italic;color:var(--muted);font-size:12px;margin:9px 0">${t.rel}</div><div style="font-weight:700;font-size:15px;color:#33506f">${t.acquirer}</div>`:`<div style="font-style:italic;color:var(--muted);font-size:12px;margin:9px 0">Strategic advisory</div>`}
+            <div style="font-weight:700;font-size:15px;color:#1f2a3a">${dl.a}</div>
+            ${dl.b?`<div style="font-style:italic;color:var(--muted);font-size:12px;margin:9px 0">${dl.v}</div><div style="font-weight:700;font-size:15px;color:#33506f">${dl.b}</div>`:`<div style="font-style:italic;color:var(--muted);font-size:12px;margin:9px 0">Strategic advisory</div>`}
             <div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px">${t.region} · ${t.year} · ${t.sector}</div>
           </div></div>
       </div>
