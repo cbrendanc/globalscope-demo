@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Globalscope Member App — Demo</title>
+<style>
+/* ===== WIZARD_CSS (injected — design system + transaction form) ===== */
+
+  :root{
+    --navy:#16243d;
+    --navy-2:#1d3050;
+    --navy-3:#27406b;
+    --ink:#1f2a3a;
+    --muted:#6b7890;
+    --line:#e4e8f0;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+    --accent:#2f7fb0;
+    --accent-d:#246390;
+    --accent-soft:#e8f2f8;
+    --amber:#c98a2b;
+    --amber-soft:#fbf2e2;
+    --green:#2e9e6b;
+    --green-soft:#e6f5ee;
+    --shadow:0 1px 3px rgba(22,36,61,.08),0 6px 24px rgba(22,36,61,.06);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{width:230px;background:var(--navy);color:#cdd6e6;flex-shrink:0;padding:22px 0;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 22px 22px}
+  .brand .mark{width:34px;height:34px;border-radius:50%;border:2px solid #8fa6c9;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bcd0ee}
+  .brand .name{font-weight:700;letter-spacing:1.5px;color:#fff;font-size:14px}
+  .brand .name small{display:block;font-size:7px;letter-spacing:1.5px;color:#8fa6c9;font-weight:500}
+  .nav{margin-top:6px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 22px;color:#aab8d0;text-decoration:none;font-size:13.5px}
+  .nav a .ic{width:16px;text-align:center;opacity:.8}
+  .nav a.active{background:var(--navy-2);color:#fff;border-left:3px solid var(--accent);padding-left:19px}
+  .nav a:hover:not(.active){color:#fff}
+  .nav .sec{font-size:10px;letter-spacing:1.5px;color:#65789a;padding:16px 22px 6px;text-transform:uppercase}
+
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+  .topbar h1{font-size:18px;margin:0;font-weight:650}
+  .topbar .who{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+  .topbar .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+  .content{padding:30px 32px;max-width:1100px;width:100%;margin:0 auto;flex:1}
+
+  /* Stepper */
+  .stepper{display:flex;align-items:center;gap:0;margin:4px 0 26px;flex-wrap:wrap}
+  .stepper .step{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12.5px;font-weight:550}
+  .stepper .dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;background:#fff;color:var(--muted)}
+  .stepper .step.done .dot{background:var(--green);border-color:var(--green);color:#fff}
+  .stepper .step.current .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper .step.current{color:var(--ink)}
+  .stepper .bar{width:34px;height:2px;background:var(--line);margin:0 6px}
+  .stepper .bar.done{background:var(--green)}
+
+  /* Cards / panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 30px;margin-bottom:18px}
+  .panel h2{margin:0 0 4px;font-size:20px;font-weight:680}
+  .panel .lead{color:var(--muted);margin:0 0 22px;font-size:14px;max-width:640px}
+
+  /* Type selection cards */
+  .typegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
+  .typecard{border:1.5px solid var(--line);border-radius:var(--radius);padding:22px 20px;cursor:pointer;background:#fff;transition:all .15s;position:relative}
+  .typecard:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+  .typecard.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .typecard .ti{font-size:26px;margin-bottom:10px}
+  .typecard h3{margin:0 0 6px;font-size:16px}
+  .typecard p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+  .typecard .ex{margin-top:12px;font-size:11.5px;color:var(--accent-d);background:#fff;border:1px dashed #bcd6e6;border-radius:8px;padding:7px 9px}
+  .typecard.sel .ex{background:#fff}
+
+  /* Fields */
+  .field{margin-bottom:20px}
+  .field.hidden{display:none}
+  .field > label{display:block;font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .field .req{color:#c0392b;margin-left:2px}
+  .helper{color:var(--muted);font-size:12.5px;margin:0 0 8px;line-height:1.45}
+  .field input[type=text],.field input[type=url],.field input[type=number],.field input[type=date],.field select,.field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;transition:border .15s,box-shadow .15s}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{min-height:92px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .row-amt{display:grid;grid-template-columns:1fr 130px;gap:10px}
+
+  /* Info / explainer block (e.g. EV definition) */
+  .infobox{background:var(--amber-soft);border:1px solid #ecd9b4;border-radius:10px;padding:13px 15px;font-size:12.8px;color:#7a5a1e;margin-bottom:18px;display:flex;gap:10px}
+  .infobox .ii{font-size:15px;line-height:1.2}
+  .infobox b{color:#5e4416}
+  .infobox code{background:#fff;border:1px solid #ecd9b4;border-radius:6px;padding:1px 6px;font-size:12px;color:#5e4416}
+
+  /* radio cards (advised side, nature of capital, yes/no) */
+  .choices{display:flex;gap:12px;flex-wrap:wrap}
+  .choice{flex:1;min-width:150px;border:1.5px solid var(--line);border-radius:10px;padding:13px 15px;cursor:pointer;background:#fff;transition:all .15s}
+  .choice:hover{border-color:var(--accent)}
+  .choice.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .choice .ch-t{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+  .choice .ch-d{color:var(--muted);font-size:12px;margin-top:3px}
+  .choices.yn .choice{min-width:120px;flex:0 0 auto}
+
+  /* chips multiselect */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{border:1px solid var(--line);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;background:#fff;transition:all .12s;color:var(--ink)}
+  .chip:hover{border-color:var(--accent)}
+  .chip.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+
+  /* party highlight */
+  .party{border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px;position:relative;transition:all .15s}
+  .party.client{border-color:var(--amber);background:var(--amber-soft)}
+  .party h4{margin:0 0 2px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .party .role-tag{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;background:var(--amber);color:#fff;border-radius:5px;padding:2px 7px;font-weight:600}
+  .party .ph{color:var(--muted);font-size:12px;margin:0 0 12px}
+  .mockfile{display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--line);border-radius:8px;padding:7px 11px;font-size:12.5px;color:var(--muted);cursor:pointer;background:#fafbfd}
+
+  /* toggle */
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .toggle button{border:none;background:#fff;padding:8px 18px;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+  .toggle button.on{background:var(--accent);color:#fff}
+
+  /* tombstone preview */
+  .preview-wrap{position:sticky;top:20px}
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+  .tombstone{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+  .tombstone .tt-head{background:var(--navy);color:#fff;text-align:center;padding:16px;font-weight:700;letter-spacing:2px;font-size:13px}
+  .tombstone .tt-body{padding:22px 20px;text-align:center}
+  .tombstone .logo-slot{height:46px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:15px;border:1px dashed var(--line);border-radius:8px;margin:0 auto 12px;max-width:200px}
+  .tombstone .verb{font-style:italic;color:var(--muted);font-size:13px;margin:10px 0}
+  .tombstone .meta{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px}
+  .preview-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600}
+  .preview-note{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
+
+  /* buttons */
+  .actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+  .btn{border:none;border-radius:9px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-d)}
+  .btn-ghost{background:#fff;color:var(--muted);border:1px solid var(--line)}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--muted)}
+  .btn-draft{background:transparent;color:var(--accent);border:none;font-size:13px;font-weight:600}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* review */
+  .review-grp{border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
+  .review-grp .rg-head{background:#f8fafc;padding:10px 16px;font-weight:600;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+  .review-grp .rg-head a{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;font-weight:600}
+  .review-grp dl{margin:0;padding:8px 16px;display:grid;grid-template-columns:200px 1fr;gap:2px 16px}
+  .review-grp dt{color:var(--muted);font-size:13px;padding:6px 0}
+  .review-grp dd{margin:0;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .review-grp dt{border-bottom:1px dashed var(--line)}
+
+  /* confirmation */
+  .confirm{text-align:center;padding:50px 20px}
+  .confirm .ok{width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px}
+  .confirm h2{font-size:22px;margin:0 0 8px}
+  .confirm p{color:var(--muted);max-width:460px;margin:0 auto 22px}
+
+  .pill{display:inline-block;background:var(--accent-soft);color:var(--accent-d);font-size:11px;font-weight:600;border-radius:20px;padding:3px 11px;margin-left:8px;vertical-align:middle}
+  .banner{background:linear-gradient(90deg,#16243d,#27406b);color:#fff;border-radius:12px;padding:13px 18px;font-size:12.5px;margin-bottom:18px;display:flex;gap:10px;align-items:center}
+  .banner b{color:#fff}
+  .banner .x{margin-left:auto;cursor:pointer;opacity:.7}
+  /* searchable dropdowns (combobox) */
+  .combo{position:relative}
+  .combo-input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+  .combo-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .combo-caret{position:absolute;right:13px;top:12px;color:var(--muted);pointer-events:none;font-size:11px}
+  .combo-box{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:6px 8px;background:#fff}
+  .combo-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .combo-box .combo-input{border:none;flex:1;min-width:140px;padding:4px;box-shadow:none}
+  .combo-box .combo-input:focus{box-shadow:none}
+  .combo-tag{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border-radius:7px;padding:4px 10px;font-size:12.5px}
+  .combo-tag b{font-weight:500}
+  .combo-tag .x{cursor:pointer;opacity:.75;font-size:14px;line-height:1}
+  .combo-tag .x:hover{opacity:1}
+  .combo-menu{position:absolute;left:0;right:0;top:calc(100% + 5px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:250px;overflow:auto;z-index:40;padding:5px}
+  .combo-menu.hidden{display:none}
+  .combo-opt{padding:8px 11px;border-radius:7px;font-size:13.5px;cursor:pointer}
+  .combo-opt:hover{background:var(--accent-soft);color:var(--accent-d)}
+  .combo-empty{padding:9px 11px;color:var(--muted);font-size:13px}
+  .field.err .combo-input,.field.err .combo-box{border-color:#d8584a;background:#fdf3f2}
+
+  /* validation */
+  .field.err > label{color:#c0392b}
+  .field.err input,.field.err select,.field.err textarea{border-color:#d8584a;background:#fdf3f2}
+  .field.err .choices,.field.err .chips,.field.err .toggle{outline:2px solid #f1b8b2;outline-offset:5px;border-radius:11px}
+  .valnote{background:#fdecea;border:1px solid #f3c2bd;color:#9c3328;border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
+  .valnote b{color:#7c281f}
+
+  /* visibility badge (public vs internal) */
+  .vis-badge{margin-top:9px;display:inline-flex;align-items:center;gap:7px;font-size:12px;border-radius:8px;padding:6px 12px;font-weight:550;line-height:1.35}
+  .vis-badge.pub{background:var(--green-soft);color:#1c7a4f}
+  .vis-badge.int{background:#eef1f6;color:#4c5b74}
+
+  /* autosave + landing meta */
+  .autosave{font-size:11.5px;color:var(--green);margin-right:16px;opacity:0;transition:opacity .25s}
+  .autosave.show{opacity:1}
+  .landing-meta{display:flex;flex-wrap:wrap;gap:18px;margin:-8px 0 22px;color:var(--muted);font-size:12.5px}
+  .landing-meta span{display:inline-flex;align-items:center;gap:7px}
+  @media(max-width:920px){.layout{grid-template-columns:1fr}.typegrid{grid-template-columns:1fr}.sidebar{display:none}.row2{grid-template-columns:1fr}}
+
+
+/* ===== Demo shell additions ===== */
+.demo-ribbon{background:repeating-linear-gradient(45deg,#1d3050,#1d3050 12px,#22395c 12px,#22395c 24px);color:#dfe8f5;font-size:11.5px;letter-spacing:.4px;text-align:center;padding:6px 10px;font-weight:600}
+.demo-ribbon b{color:#fff}
+.topbar .demo-tag{background:var(--amber-soft);color:var(--amber);border:1px solid #ecd9b4;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 8px;margin-right:14px}
+
+/* tabs strip */
+.tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.tab{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 20px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;flex:1;text-align:center;min-width:150px}
+.tab.active{background:#e9eef5;color:var(--ink);border-color:#cdd8e6}
+.tab.cta{flex:0 0 auto;background:#fff;color:var(--accent-d);border-color:#bcd6e6}
+.tab.cta:hover{background:var(--accent-soft)}
+
+/* stat cards */
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:22px 24px}
+.stat .lbl{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:12px}
+.stat .row{display:flex;gap:40px}
+.stat .big{font-size:30px;font-weight:300;color:var(--accent)}
+.stat .big.amber{color:var(--amber)}
+.stat .sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* filter bar */
+.filterbar{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:18px}
+.filterbar .search{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:12px;color:var(--muted)}
+.filterbar .search input{border:none;outline:none;flex:1;font-size:13.5px;font-family:inherit;margin-left:8px}
+.filterbar .frow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.filterbar select{padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;color:var(--ink);background:#fff;flex:1;min-width:140px}
+.filterbar .lnk{color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
+
+/* generic card grid */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+/* transaction tombstone card */
+.tcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tcard .top{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px 0;font-size:10.5px;color:var(--muted)}
+.tcard .flags{font-size:15px;letter-spacing:1px}
+.tcard .firm{text-align:right;font-weight:600;letter-spacing:.4px;max-width:120px}
+.tcard .body{padding:8px 16px 16px;text-align:center;flex:1;display:flex;flex-direction:column}
+.tcard .yr{font-size:11px;color:var(--muted);text-align:left;padding:0 16px}
+.tcard .client{font-weight:600;font-size:13.5px;margin:6px 0 4px}
+.tcard .logo{height:54px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#33506f;font-size:18px;letter-spacing:.5px;margin:8px 0}
+.tcard .desc{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:auto}
+.tcard .verb{font-size:11px;color:var(--accent-d);font-weight:600;margin-top:8px}
+
+/* opportunity card */
+.ocard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 18px 20px}
+.ocard h3{margin:0;text-align:center;font-size:16px}
+.ocard .date{text-align:center;color:var(--muted);font-size:11.5px;margin:4px 0 14px}
+.ocard dl{display:grid;grid-template-columns:auto 1fr;gap:9px 12px;margin:0}
+.ocard dt{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.ocard dd{margin:0;font-size:12.5px;text-align:right}
+.badge{display:inline-block;border-radius:20px;font-size:10.5px;font-weight:700;padding:3px 10px}
+.badge.active{background:var(--green-soft);color:#1c7a4f}
+
+/* firm card */
+.fcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;text-align:center}
+.fcard .logo{height:46px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#33506f;font-size:16px;margin-bottom:10px}
+.fcard h3{margin:0 0 3px;font-size:14px}
+.fcard p{margin:0;color:var(--muted);font-size:12px}
+.mapbox{height:230px;border:1px solid var(--line);border-radius:12px;background:
+  radial-gradient(circle at 20% 40%,#dce8f2,transparent 30%),
+  radial-gradient(circle at 70% 60%,#dce8f2,transparent 28%),
+  linear-gradient(180deg,#eef3f8,#e6edf5);
+  display:flex;align-items:center;justify-content:center;color:#8aa0bd;font-size:13px;margin-bottom:18px;position:relative;overflow:hidden}
+.mapbox .pin{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(47,127,176,.2)}
+
+/* content card */
+.ccard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.ccard .tag{background:#f0f3f8;color:var(--muted);font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;padding:8px 14px;font-weight:600}
+.ccard .in{padding:12px 16px 18px}
+.ccard .date{color:var(--muted);font-size:11px;margin-bottom:6px}
+.ccard h3{margin:0 0 12px;font-size:15px;line-height:1.3}
+.ccard .meta{font-size:11.5px;color:var(--muted);display:grid;grid-template-columns:auto 1fr;gap:5px 10px}
+
+/* events calendar */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.legend .lg{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--ink)}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.cal .dow{background:#f7f9fc;font-size:11px;color:var(--muted);font-weight:600;padding:8px;text-align:left;border-bottom:1px solid var(--line)}
+.cal .day{min-height:78px;border:0.5px solid #eef1f6;padding:7px;font-size:12px}
+.cal .day .n{color:var(--muted);font-weight:600}
+.cal .ev{margin-top:5px;border-radius:6px;padding:4px 6px;font-size:10px;line-height:1.25;color:#fff}
+
+/* notifications */
+.notif{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.notif .item{display:flex;gap:13px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.notif .item:last-child{border-bottom:none}
+.notif .ic{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-d);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif .item.unread{background:#fbfdff}
+.notif .t{font-size:13.5px;font-weight:600}
+.notif .d{font-size:12.5px;color:var(--muted);margin-top:2px}
+.notif .when{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+/* settings */
+.setcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:24px 26px;max-width:620px}
+.setrow{display:grid;grid-template-columns:170px 1fr;gap:16px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+.setrow:last-child{border-bottom:none}
+.setrow label{font-size:13px;color:var(--muted);font-weight:600}
+.setrow input,.setrow select{padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;font-family:inherit;width:100%}
+
+/* wizard host bar */
+.wizbar{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px 18px;margin-bottom:16px}
+.wizbar .t{font-weight:650;font-size:15px}
+.wizbar .close{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.wizbar .close:hover{color:var(--ink);border-color:var(--muted)}
+
+.page-intro{color:var(--muted);font-size:13px;margin:-6px 0 18px;max-width:720px}
+@media(max-width:920px){.statgrid{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.cal .day{min-height:50px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar: MEMBER view only (no admin items) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">GS</div>
+      <div class="name">GLOBALSCOPE<small>M&amp;A OFFICES WORLDWIDE</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-route="dashboard"><span class="ic">▦</span> Dashboard</a>
+      <a data-route="opportunities"><span class="ic">◎</span> Opportunities</a>
+      <a data-route="transactions"><span class="ic">↗</span> Transactions</a>
+      <a data-route="directory"><span class="ic">☰</span> Directory</a>
+      <a data-route="events"><span class="ic">▤</span> Events Calendar</a>
+      <a data-route="content"><span class="ic">◳</span> Content</a>
+      <div class="sec">Profile</div>
+      <a data-route="notifications"><span class="ic">♪</span> Notifications</a>
+      <a data-route="settings"><span class="ic">⚙</span> Settings</a>
+      <a data-route="logout"><span class="ic">⎋</span> Logout</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="demo-ribbon">DEMO ENVIRONMENT — layout &amp; UX only. <b>No data is captured or saved.</b> For workshopping the member-app redesign.</div>
+    <div class="topbar">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="who">
+        <span class="autosave" id="autosave">✓ Draft saved automatically</span>
+        <span class="demo-tag">DEMO</span>
+        <span>Hi, Brendan</span><div class="avatar">BC</div>
+      </div>
+    </div>
+    <div class="content"><div id="page"></div></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   GLOBALSCOPE MEMBER APP — DEMO SHELL
+   Hash-routed static demo. No backend, no storage, no data capture.
+   The Transactions "Submit" flow launches the redesigned wizard module.
+   ===================================================================== */
+
+const SECTORS6 = ["Business & Financial Services","Consumer","Energy Transition","Industrials","Life Sciences","TMT"];
+const REGIONS_F = ["All Regions","Africa","Asia-Pacific","Europe","Latin America & Caribbean","Middle East","North America","South Asia"];
+
+/* ---------- mock data ---------- */
+const TXNS = [
+  {client:"Dtales ApS", logo:"DTALES", firm:"Carlsquare GmbH", flags:"🇩🇰 🇸🇪", year:"2026", verb:"Sold to", sector:"TMT", desc:"Advised on the sale of a Danish data-analytics business to a Nordic strategic acquirer."},
+  {client:"Schwabe Group", logo:"SCHWABE", firm:"Carlsquare GmbH", flags:"🇩🇪 🇩🇪", year:"2026", verb:"Acquired", sector:"Life Sciences", desc:"Acquisition of a natural-health products company expanding its European footprint."},
+  {client:"CSG Chemical", logo:"CSG", firm:"Pegasus Capital", flags:"🇮🇪 🇬🇧", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Pegasus advised CSG Chemical Solutions on its acquisition of a UK chemical distribution specialist."},
+  {client:"Dalco GF Tech", logo:"ARVIND", firm:"Incredmape Advisory", flags:"🇮🇳 🇺🇸", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Arvind Advanced Materials acquired Dalco GF Technologies for USD $136M."},
+  {client:"SMEC Power & Technology", logo:"SMEC", firm:"Octavian Group", flags:"🇦🇺 🇦🇺", year:"2026", verb:"Acquired", sector:"Industrials", desc:"Mayfield Group Holdings acquired SMEC Power & Technology, an Australian electrical engineering company."},
+  {client:"Helio Renewables", logo:"HELIO", firm:"DEX Advisory", flags:"🇳🇱 🇪🇸", year:"2026", verb:"Raised capital", sector:"Energy Transition", desc:"Structured a growth-equity raise for a solar developer to fund its Iberian pipeline."},
+  {client:"Northbridge Bank", logo:"NORTHBR.", firm:"Capital Times", flags:"🇨🇦 🇨🇦", year:"2025", verb:"Advised", sector:"Business & Financial Services", desc:"Strategic advisory on a regional banking consolidation."},
+  {client:"FreshFields Foods", logo:"FRESH", firm:"AWR Lloyd", flags:"🇹🇭 🇸🇬", year:"2025", verb:"Sold to", sector:"Consumer", desc:"Cross-border sale of a food-processing business to a regional consumer group."}
+];
+const OPPS = [
+  {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"100M+", file:"Public", region:"South Asia"},
+  {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€10M", file:"Public", region:"Latin America & Caribbean"},
+  {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"€1–€5M", file:"Public", region:"Asia-Pacific"},
+  {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"No file", region:"North America"}
+];
+const FIRMS = [
+  {name:"Octavian Group", loc:"Sydney, Australia", logo:"OCTAVIAN", x:"82%", y:"78%"},
+  {name:"Carlsquare GmbH", loc:"Hamburg, Germany", logo:"CARLSQ.", x:"50%", y:"34%"},
+  {name:"Osprey Capital", loc:"Toronto, Canada", logo:"OSPREY", x:"24%", y:"36%"},
+  {name:"RCS Advisors", loc:"Mumbai, India", logo:"RCS", x:"66%", y:"50%"},
+  {name:"AWR Lloyd", loc:"Bangkok, Thailand", logo:"AWR", x:"74%", y:"56%"},
+  {name:"DEX Advisory", loc:"Amsterdam, Netherlands", logo:"DEX", x:"49%", y:"32%"},
+  {name:"Pegasus Capital", loc:"Dublin, Ireland", logo:"PEGASUS", x:"45%", y:"33%"},
+  {name:"MelCap Partners", loc:"Cleveland, USA", logo:"MELCAP", x:"22%", y:"40%"}
+];
+const EVENTS = [
+  {day:2, t:"Introduction to Stefanini Group", cat:"#9b6dd6"},
+  {day:10, t:"APAC-MEA Deal Day", cat:"#2f9e6b"},
+  {day:17, t:"Quarterly Roundtable", cat:"#2f9e6b"},
+  {day:24, t:"Sector Call — Industrials", cat:"#2f7fb0"},
+  {day:26, t:"Transaction Reporting deadline", cat:"#16243d"}
+];
+const EVENT_CATS = [["Academies","#e07b2a"],["Americas Deal Day","#2f9e6b"],["APAC-MEA DD","#2f9e6b"],
+  ["Board of Directors","#888"],["Conferences","#d84a3a"],["Quarterly Roundtables","#2f9e6b"],
+  ["Sector Calls","#2f7fb0"],["Transaction Reporting","#16243d"],["Webinars","#9b6dd6"]];
+const CONTENT = [
+  {tag:"Conference Materials", date:"13 May 2026", title:"Spring 2026 Santiago Conference — Business & Financials Sector Presentation", sector:"Business & Financial Services", lang:"English"},
+  {tag:"Sector Report", date:"07 May 2026", title:"Software Benchmark Report Q1 2026 — Silverpeak", sector:"TMT", lang:"English"},
+  {tag:"Conference Materials", date:"23 Apr 2026", title:"Spring 2026 Santiago — Globalscope Intra League Tables", sector:"Multiple", lang:"English"},
+  {tag:"Workshop Materials", date:"16 Apr 2026", title:"AI in M&A — Presentations", sector:"—", lang:"English"}
+];
+const NOTIFS = [
+  {ic:"✓", t:"Your transaction “SMEC Power & Technology” is now live", d:"Approved by the Globalscope team and visible on the network.", when:"2h ago", unread:true},
+  {ic:"♪", t:"New opportunity matching your sectors: Project Pulse", d:"Octavian Group posted a sell-side mandate in Industrials.", when:"1d ago", unread:true},
+  {ic:"▤", t:"APAC-MEA Deal Day — registration open", d:"Reserve your place for the regional deal day on 10 June.", when:"3d ago", unread:false},
+  {ic:"⚑", t:"Quarterly Transaction Reporting due 26 June", d:"Please submit and e-sign your quarterly reporting letter.", when:"5d ago", unread:false}
+];
+
+/* ---------- reusable bits ---------- */
+function filterBar(opts){
+  const sels = (opts||["All Regions","All Sectors","All Sub-sectors"]).map(o=>`<select><option>${o}</option></select>`).join("");
+  return `<div class="filterbar">
+    <div class="search">🔍<input placeholder="Search…"></div>
+    <div class="frow">${sels}<span class="lnk">Reset</span><span class="lnk">Apply</span></div>
+  </div>`;
+}
+function tabs(items, activeIdx, ctaIdx){
+  return `<div class="tabs">${items.map((t,i)=>`<div class="tab ${i===activeIdx?'active':''} ${i===ctaIdx?'cta':''}" data-tab="${i}">${t}</div>`).join("")}</div>`;
+}
+
+/* ---------- PAGES ---------- */
+const PAGES = {
+  dashboard:{ title:"Dashboard", html(){
+    return `<p class="page-intro">Your snapshot of network activity and your firm's reporting status.</p>
+    <div class="statgrid">
+      <div class="stat"><div class="lbl">Octavian Group — Transactions YTD</div>
+        <div class="row"><div><div class="big">47</div><div class="sub">Completed</div></div>
+        <div><div class="big">$5.22bn</div><div class="sub">Total value</div></div></div></div>
+      <div class="stat"><div class="lbl">This Quarter</div>
+        <div class="row"><div><div class="big amber">16</div><div class="sub">Completed</div></div>
+        <div><div class="big amber">$606.9m</div><div class="sub">Total value</div></div></div></div>
+    </div>
+    <div class="panel">
+      <h2 style="font-size:16px">Network sector breakdown</h2>
+      <p class="helper">Share of reported transactions by sector this year — the data behind the league tables.</p>
+      <div id="bars"></div>
+    </div>
+    <div class="panel" style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <div><b>Quarterly Transaction Reporting</b><div class="helper" style="margin:4px 0 0">E-sign your quarterly reporting letter before 26 June. (Demo — non-functional.)</div></div>
+      <button class="btn btn-primary">Review &amp; e-sign letter</button>
+    </div>`;
+  }, mount(){
+    const data=[["Industrials",34],["Business & Financial Services",22],["TMT",17],["Consumer",12],["Life Sciences",9],["Energy Transition",6]];
+    const cols=["#16243d","#2f7fb0","#9b6dd6","#c98a2b","#2e9e6b","#5a8db0"];
+    document.getElementById("bars").innerHTML = data.map((d,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;margin:9px 0">
+        <div style="width:200px;font-size:12.5px;color:var(--muted)">${d[0]}</div>
+        <div style="flex:1;background:#eef1f6;border-radius:6px;height:14px;overflow:hidden"><div style="width:${d[1]*2.4}%;height:100%;background:${cols[i]}"></div></div>
+        <div style="width:36px;font-size:12px;text-align:right;font-weight:600">${d[1]}%</div>
+      </div>`).join("");
+  }},
+
+  opportunities:{ title:"Opportunities", html(){
+    return tabs(["Active Opportunities","My Opportunities","+ Create a New Opportunity"],0,2)
+      + filterBar(["All Deal Types","All Mandates","Member","Deal Size","All Regions","All Sectors"])
+      + `<div class="grid">${OPPS.map(o=>`
+        <div class="ocard"><h3>${o.project}</h3><div class="date">${o.date}</div>
+          <dl>
+            <dt>Status</dt><dd><span class="badge active">Active</span></dd>
+            <dt>Member firm</dt><dd>${o.firm}</dd>
+            <dt>Deal type</dt><dd>${o.type}</dd>
+            <dt>Mandate</dt><dd>${o.mandate}</dd>
+            <dt>Est. value</dt><dd>${o.value}</dd>
+            <dt>Deal file</dt><dd>${o.file}</dd>
+            <dt>Region</dt><dd>${o.region}</dd>
+          </dl></div>`).join("")}</div>`;
+  }},
+
+  transactions:{ title:"Transactions", html(){
+    return `<div class="statgrid">
+      <div class="stat"><div class="lbl">Transactions YTD</div>
+        <div class="row"><div><div class="big">47</div><div class="sub">Completed</div></div>
+        <div><div class="big">$5.22bn</div><div class="sub">Total value</div></div></div></div>
+      <div class="stat"><div class="lbl">This Quarter</div>
+        <div class="row"><div><div class="big amber">16</div><div class="sub">Completed</div></div>
+        <div><div class="big amber">$606.9m</div><div class="sub">Total value</div></div></div></div>
+    </div>`
+      + tabs(["All Transactions","My Transactions","+ Submit a New Transaction"],0,2)
+      + filterBar(["All Regions","All Sectors","All Sub-sectors"])
+      + `<div class="grid">${TXNS.map(t=>`
+        <div class="tcard">
+          <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.firm}</span></div>
+          <div class="yr">${t.year}</div>
+          <div class="body">
+            <div class="client">${t.client}</div>
+            <div class="logo">${t.logo}</div>
+            <div class="verb">${t.verb}</div>
+            <div class="desc">${t.desc}</div>
+          </div>
+        </div>`).join("")}</div>`;
+  }, mount(){
+    // wire the CTA tab to launch the wizard
+    document.querySelectorAll('[data-tab]').forEach(t=>{
+      if(t.dataset.tab==="2") t.onclick=openWizard;
+    });
+  }},
+
+  directory:{ title:"Directory", html(){
+    return tabs(["Member Firms","Users","Favourites"],0)
+      + `<div class="mapbox" id="map">Member firms across the network</div>`
+      + filterBar(["All Sectors","All Regions"])
+      + `<div class="grid">${FIRMS.map(f=>`
+        <div class="fcard"><div class="logo">${f.logo}</div><h3>${f.name}</h3><p>${f.loc}</p></div>`).join("")}</div>`;
+  }, mount(){
+    const map=document.getElementById("map");
+    FIRMS.forEach(f=>{ const p=document.createElement("div"); p.className="pin"; p.style.left=f.x; p.style.top=f.y; p.title=f.name; map.appendChild(p); });
+  }},
+
+  events:{ title:"Events Calendar", html(){
+    const dow=["M","T","W","T","F","S","S"];
+    // June 2026 starts on a Monday
+    let cells="";
+    dow.forEach(d=>cells+=`<div class="dow">${d}</div>`);
+    for(let n=1;n<=30;n++){
+      const ev=EVENTS.find(e=>e.day===n);
+      cells+=`<div class="day"><div class="n">${n}</div>${ev?`<div class="ev" style="background:${ev.cat}">${ev.t}</div>`:""}</div>`;
+    }
+    return `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-ghost">Request to add event</button></div>
+      <div class="legend">${EVENT_CATS.map(c=>`<span class="lg"><span class="dot" style="background:${c[1]}"></span>${c[0]}</span>`).join("")}</div>
+      <div class="panel" style="padding:18px"><div style="font-weight:650;margin-bottom:12px">June 2026</div>
+      <div class="cal">${cells}</div></div>`;
+  }},
+
+  content:{ title:"Content", html(){
+    return `<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-ghost">Request to add content</button></div>`
+      + filterBar(["All Regions","All Countries","Content Type","All Tags"])
+      + `<div class="grid">${CONTENT.map(c=>`
+        <div class="ccard"><div class="tag">${c.tag}</div><div class="in">
+          <div class="date">${c.date}</div><h3>${c.title}</h3>
+          <div class="meta"><span>Sector</span><span>${c.sector}</span><span>Language</span><span>${c.lang}</span></div>
+        </div></div>`).join("")}</div>`;
+  }},
+
+  notifications:{ title:"Notifications", html(){
+    return `<div class="notif">${NOTIFS.map(n=>`
+      <div class="item ${n.unread?'unread':''}"><div class="ic">${n.ic}</div>
+        <div><div class="t">${n.t}</div><div class="d">${n.d}</div></div>
+        <div class="when">${n.when}</div></div>`).join("")}</div>`;
+  }},
+
+  settings:{ title:"Settings", html(){
+    return `<div class="setcard">
+      <h2 style="margin-top:0;font-size:17px">Profile &amp; preferences</h2>
+      <p class="helper">Demo only — nothing here is saved.</p>
+      <div class="setrow"><label>Name</label><input value="Brendan Cockram"></div>
+      <div class="setrow"><label>Member firm</label><input value="Octavian Group"></div>
+      <div class="setrow"><label>Email</label><input value="brendan@octaviangroup.com.au"></div>
+      <div class="setrow"><label>Primary region</label><select><option>Asia-Pacific</option></select></div>
+      <div class="setrow"><label>Email notifications</label>
+        <div class="toggle"><button class="on">On</button><button>Off</button></div></div>
+      <div style="margin-top:18px"><button class="btn btn-primary">Save changes</button></div>
+    </div>`;
+  }},
+
+  logout:{ title:"Logout", html(){
+    return `<div class="panel" style="text-align:center;padding:50px"><h2>You'd be logged out here</h2>
+      <p class="helper">This is a demo — there's no real session. <span class="lnk" onclick="navTo('dashboard')">Back to dashboard</span></p></div>`;
+  }}
+};
+
+/* ---------- router ---------- */
+function navTo(r){ const t="#/"+r; if(location.hash===t){ route(); } else { location.hash=t; } }
+function currentRoute(){ return (location.hash.replace(/^#\/?/,"")||"dashboard"); }
+function route(){
+  const r = currentRoute();
+  const p = PAGES[r] || PAGES.dashboard;
+  document.getElementById("pageTitle").textContent = p.title;
+  document.getElementById("page").innerHTML = p.html();
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active", a.dataset.route===r));
+  if(p.mount) p.mount();
+  document.querySelector(".content").scrollTo?.({top:0});
+  window.scrollTo({top:0});
+}
+document.getElementById("nav").addEventListener("click",e=>{
+  const a=e.target.closest("a[data-route]"); if(!a) return;
+  e.preventDefault(); navTo(a.dataset.route);
+});
+// in-page tab switching (cosmetic) for non-CTA tabs
+document.getElementById("page").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t || t.classList.contains("cta")) return;
+  const wrap=t.parentElement; wrap.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active");
+});
+
+/* ---------- launch the transaction wizard inside the shell ---------- */
+function openWizard(){
+  const page=document.getElementById("page");
+  page.innerHTML = `<div class="wizbar"><span class="t">Submit a New Transaction</span><button class="close" id="wizClose">✕ Close</button></div><div id="wizardMount"></div>`;
+  document.getElementById("wizClose").onclick=()=>navTo("transactions");
+  document.getElementById("pageTitle").textContent="Submit a New Transaction";
+  GSWizard.open(document.getElementById("wizardMount"), ()=>navTo("transactions"));
+}
+
+window.addEventListener("hashchange", route);
+
+/* ===== WIZARD_JS (injected module: window.GSWizard) ===== */
+window.GSWizard=(function(){
+let content; let EXIT=null;
+function open(mountEl,onExit){ content=mountEl; EXIT=onExit; state={ type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } }; render(); }
+
+
+/* ============================================================
+   GLOBALSCOPE · TRANSACTION REPORTING — REDESIGN PROTOTYPE
+   Config-driven dynamic form. The schema below IS the proposal:
+   each transaction type defines its own steps & fields, and
+   fields can appear/disappear based on earlier answers.
+   ============================================================ */
+
+/* Six top-level sectors aligned to the Globalscope league-table taxonomy (from the live Dashboard) */
+const SECTOR_TREE = {
+  "Business & Financial Services":["Banking","Insurance","Asset & Wealth Management","Fintech","Payments","Professional Services","Specialty Finance"],
+  "Consumer":["Food & Beverage","Apparel & Luxury","Consumer Products","Retail & E-commerce","Leisure & Hospitality","Agriculture & Food"],
+  "Energy Transition":["Oil & Gas","Power & Utilities","Renewables","Cleantech","Mining & Metals","Water & Waste"],
+  "Industrials":["Industrial Equipment & Machinery","Industrial Products","Electronics","Aerospace & Defense","Automotive & Components","Building & Construction","Chemicals","Transport & Logistics"],
+  "Life Sciences":["Medical Devices","Pharmaceuticals","Biotechnology","Healthcare Services","Digital Health","Diagnostics & Labs"],
+  "TMT":["Software / SaaS","IT Services","Telecom","Media & Entertainment","Semiconductors","Hardware & Devices","Gaming"]
+};
+const SECTORS = Object.keys(SECTOR_TREE);
+function subsForSelected(sel){ const out=[]; (sel||[]).forEach(x=>{ (SECTOR_TREE[x]||[]).forEach(y=>{ if(!out.includes(y)) out.push(y); }); }); return out; }
+const SUBSECTORS = subsForSelected(SECTORS);
+
+const REGION_COUNTRIES = {
+  "North America":["United States","Canada","Mexico"],
+  "Latin America & Caribbean":["Argentina","Bahamas","Bolivia","Brazil","Chile","Colombia","Costa Rica","Dominican Republic","Ecuador","El Salvador","Guatemala","Honduras","Jamaica","Nicaragua","Panama","Paraguay","Peru","Puerto Rico","Trinidad and Tobago","Uruguay","Venezuela"],
+  "Europe":["Austria","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Iceland","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Norway","Poland","Portugal","Romania","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Ukraine","United Kingdom"],
+  "Middle East":["Bahrain","Iraq","Israel","Jordan","Kuwait","Lebanon","Oman","Qatar","Saudi Arabia","Turkey","United Arab Emirates"],
+  "Africa":["Algeria","Angola","Botswana","Cameroon","Cote d'Ivoire","Egypt","Ethiopia","Ghana","Kenya","Mauritius","Morocco","Mozambique","Nigeria","Rwanda","Senegal","South Africa","Tanzania","Tunisia","Uganda","Zambia","Zimbabwe"],
+  "South Asia":["Afghanistan","Bangladesh","Bhutan","India","Maldives","Nepal","Pakistan","Sri Lanka"],
+  "Asia-Pacific (incl. Australia/NZ)":["Australia","Brunei","Cambodia","China","Fiji","Hong Kong","Indonesia","Japan","Laos","Malaysia","Mongolia","Myanmar","New Zealand","Papua New Guinea","Philippines","Singapore","South Korea","Taiwan","Thailand","Vietnam"]
+};
+const COUNTRIES = {}; Object.keys(REGION_COUNTRIES).forEach(r=>REGION_COUNTRIES[r].forEach(c=>COUNTRIES[c]=r));
+const COUNTRY_LIST = Object.keys(COUNTRIES).sort();
+const REGIONS = ["Africa","Asia-Pacific (incl. Australia/NZ)","Europe","Latin America & Caribbean",
+  "Middle East","North America","South Asia"];
+const CURRENCIES = ["USD","EUR","GBP","AUD","CAD","JPY","INR","SGD"];
+
+/* ---- Field helper text (explainers on EVERYTHING) ---- */
+
+const SCHEMA = {
+  mna: {
+    label:"M&A",
+    verb:"Acquired",
+    steps:[
+      {
+        key:"parties", title:"Who was involved & which side were you on?",
+        lead:"Start with the simple part: the two companies in the deal, and which one you advised. We'll use this to label everything else for you.",
+        fields:[
+          { id:"advised", label:"Which side did you advise?", req:true, type:"choices",
+            helper:"This drives the rest of the form. Pick one.",
+            options:[
+              {v:"sell",   t:"Sell-side",        d:"We advised the company being sold (the target / seller)."},
+              {v:"buy",    t:"Buy-side",         d:"We advised the company doing the buying (the acquirer)."},
+              {v:"fair",   t:"Fairness opinion", d:"We provided an independent fairness opinion on the deal."}
+            ]},
+          { id:"_partyBlock", type:"parties" },
+          { id:"closeDate", label:"Completion / announcement date", req:true, type:"date",
+            helper:"When the deal closed, or was announced if not yet closed." }
+        ]
+      },
+      {
+        key:"about", title:"About the deal",
+        lead:"Classification so other members can find this deal when searching for expertise.",
+        fields:[
+          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
+            helper:"The industry of the target. Choose all that apply." },
+          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
+            helper:"Optional — sharpens search and league tables." },
+          { id:"country", label:"Country of the target", req:true, type:"text", placeholder:"e.g. Australia",
+            helper:"Where the target is based." },
+          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
+            helper:"Auto-suggested from the country." },
+          { id:"desc", label:"Deal description", req:true, type:"textarea",
+            placeholder:"e.g. Mayfield Group Holdings acquired SMEC Power & Technology, an Australian electrical engineering company serving the mining, industrial and resources sectors.",
+            helper:"Two or three sentences: who, what, why it matters. Appears publicly and in member search." },
+          { id:"prurl", label:"Press release / announcement URL", type:"url", placeholder:"https://…",
+            helper:"Optional. A public link adds credibility and lets us verify the deal." }
+        ]
+      },
+      {
+        key:"financials", title:"Financial details",
+        lead:"Numbers power our league tables. Report in full notation; disclose externally only what you're permitted to.",
+        info:"ev",
+        fields:[
+          { id:"discDeal", label:"Show this transaction externally?", req:true, type:"toggle",
+            helper:"Yes = appears on the MApp and public website. No = internal only." },
+          { id:"ev", label:"Enterprise Value of the target", type:"amount",
+            helper:"Full notation (e.g. 30,000,000). See the EV definition above.", curId:"evCcy" },
+          { id:"discEV", label:"Show the Enterprise Value externally?", req:true, type:"toggle",
+            helper:"Always used internally. Yes also publishes it, if included in your description." },
+          { id:"evEbitda", label:"EV / EBITDA multiple", type:"number", placeholder:"e.g. 8.5",
+            helper:"EV ÷ EBITDA. Leave blank if N/A or confidential." },
+          { id:"evRev", label:"EV / Revenue multiple", type:"number", placeholder:"e.g. 1.2",
+            helper:"EV ÷ Revenue. Leave blank if N/A or confidential." }
+        ]
+      },
+      {
+        key:"recognition", title:"Recognition & tombstone",
+        lead:"Give credit and check how the deal will appear.",
+        fields:[
+          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
+            helper:"Tell us if a fellow member firm worked alongside you." },
+          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
+            helper:"The firm(s) you partnered with.", showIf:{f:"collab",eq:true} },
+          { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
+            source:["You (Brendan Cockram)","Add a colleague…"],
+            helper:"Tagged members get the deal on their track record." },
+          { id:"verb", label:"Tombstone wording", type:"text",
+            helper:"Auto-suggested. Edit if you'd word it differently." }
+        ]
+      }
+    ]
+  },
+
+  capital: {
+    label:"Capital Raise",
+    verb:"Raised capital",
+    steps:[
+      {
+        key:"parties", title:"The company & your role",
+        lead:"One company raising funding. Tell us who, and what kind of capital.",
+        fields:[
+          { id:"natureCap", label:"What type of capital was raised?", req:true, type:"choices",
+            helper:"This drives which financial figures we ask for next.",
+            options:[
+              {v:"equity", t:"Equity",  d:"Shares issued — incl. private equity, venture capital, growth equity."},
+              {v:"debt",   t:"Debt",    d:"Borrowing — senior, mezzanine, private credit, bonds."},
+              {v:"hybrid", t:"Hybrid / structured", d:"Convertibles, preferred, or a mixed structure."}
+            ]},
+          { id:"_partyBlockCap", type:"partiesCap" },
+          { id:"closeDate", label:"Completion / announcement date", req:true, type:"date",
+            helper:"When the raise completed or was announced." }
+        ]
+      },
+      {
+        key:"about", title:"About the company",
+        lead:"Classification so the raise is discoverable and counts in league tables.",
+        fields:[
+          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
+            helper:"The industry of the company that raised capital." },
+          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
+            helper:"Optional — sharpens search and rankings." },
+          { id:"country", label:"Country of the company", req:true, type:"text", placeholder:"e.g. Netherlands",
+            helper:"Where the company is headquartered." },
+          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
+            helper:"Auto-suggested from the country." },
+          { id:"desc", label:"Deal description", req:true, type:"textarea",
+            placeholder:"e.g. Advised a Series C equity raise for a Dutch logistics-tech company to fund European expansion.",
+            helper:"Two or three sentences: who raised, what for, your role." },
+          { id:"prurl", label:"Press release / announcement URL", type:"url", placeholder:"https://…",
+            helper:"Optional public link for verification and credibility." }
+        ]
+      },
+      {
+        key:"financials", title:"Financial details",
+        lead:"Full notation. We only ask for metrics that fit the capital type you chose.",
+        fields:[
+          { id:"discDeal", label:"Show this transaction externally?", req:true, type:"toggle",
+            helper:"Yes = appears on the MApp and website. No = internal only." },
+          { id:"amount", label:"Amount raised", req:true, type:"amount",
+            helper:"Total capital raised, in full notation (e.g. 50,000,000).", curId:"amtCcy" },
+          { id:"postEq", label:"Post-money equity valuation", type:"amount",
+            helper:"Equity value right after the raise.",
+            curId:"postEqCcy", showIf:{f:"natureCap",in:["equity","hybrid"]} },
+          { id:"postEV", label:"Post-money Enterprise Value", type:"amount",
+            helper:"Enterprise Value right after the raise, where known.",
+            curId:"postEVCcy" },
+          { id:"discEV", label:"Show the financial figures externally?", req:true, type:"toggle",
+            helper:"Always used internally. Yes also publishes, if included in your description." }
+        ]
+      },
+      {
+        key:"recognition", title:"Recognition & tombstone",
+        lead:"Credit the team and confirm how the raise appears.",
+        fields:[
+          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
+            helper:"Tell us if a fellow member firm worked alongside you." },
+          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
+            helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
+          { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
+            source:["You (Brendan Cockram)","Add a colleague…"],
+            helper:"Tagged members get the deal on their track record." },
+          { id:"verb", label:"Tombstone wording", type:"text",
+            helper:"Auto-suggested. Edit freely." }
+        ]
+      }
+    ]
+  },
+
+  advisory: {
+    label:"Other Advisory",
+    verb:"Advised on",
+    steps:[
+      {
+        key:"parties", title:"The engagement & your role",
+        lead:"Advisory work where you weren't the principal deal advisor — valuations, consulting, strategic advisory. (Fairness opinions go under M&A.)",
+        fields:[
+          { id:"natureAdv", label:"Nature of the advisory assignment", req:true, type:"select",
+            source:["Valuation","Strategic advisory","Management consulting","Debt advisory","Restructuring","Due diligence","Other"],
+            helper:"Pick the closest fit." },
+          { id:"natureOther", label:"Briefly describe the assignment type", type:"text",
+            placeholder:"Describe the advisory work…",
+            helper:"In a few words, what it involved.", showIf:{f:"natureAdv",eq:"Other"} },
+          { id:"_partyBlockAdv", type:"partiesAdv" },
+          { id:"closeDate", label:"Completion date", req:true, type:"date",
+            helper:"When the engagement was completed." }
+        ]
+      },
+      {
+        key:"about", title:"About the client",
+        lead:"Classification so the engagement is discoverable.",
+        fields:[
+          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
+            helper:"The industry of the client." },
+          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
+            helper:"Optional — sharpens search results." },
+          { id:"country", label:"Country of the client", req:true, type:"text", placeholder:"e.g. Singapore",
+            helper:"Where the client is based." },
+          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
+            helper:"Auto-suggested from the country." },
+          { id:"desc", label:"Engagement description", req:true, type:"textarea",
+            placeholder:"e.g. Provided an independent valuation of a manufacturing business to support shareholder decision-making.",
+            helper:"Two or three sentences on the work and value added." },
+          { id:"prurl", label:"Public link (if any)", type:"url", placeholder:"https://…",
+            helper:"Optional — only if the engagement was publicly referenced." }
+        ]
+      },
+      {
+        key:"financials", title:"Engagement size",
+        lead:"Lighter here. Add a size only where appropriate and permitted.",
+        fields:[
+          { id:"discDeal", label:"Show this engagement externally?", req:true, type:"toggle",
+            helper:"Yes = appears on the MApp/website. No = internal only." },
+          { id:"size", label:"Relevant transaction or valuation size", type:"amount",
+            helper:"Where appropriate — e.g. the valuation or underlying deal size. Leave blank if N/A.",
+            curId:"sizeCcy" },
+          { id:"discEV", label:"Show the size externally?", req:true, type:"toggle",
+            helper:"Always used internally. Yes also publishes it, if included in your description." }
+        ]
+      },
+      {
+        key:"recognition", title:"Recognition",
+        lead:"Credit the team. A directory entry builds your track record.",
+        fields:[
+          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
+            helper:"Tell us if a fellow member firm worked alongside you." },
+          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
+            helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
+          { id:"tagged", label:"Tag the people who worked on this engagement", type:"chips",
+            source:["You (Brendan Cockram)","Add a colleague…"],
+            helper:"Tagged members get the engagement on their track record." }
+        ]
+      }
+    ]
+  }
+};
+
+const STEP_NAMES = ["Type","Parties & role","Details","Financials","Recognition","Review"];
+
+/* ---------------- state ---------------- */
+let state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
+             discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } };
+
+const $ = sel => document.querySelector(sel);
+/* content provided by open() */
+
+/* ---------------- render entry ---------------- */
+function render(){
+  if(state.type===null){ renderTypeSelect(); return; }
+  if(state.step===99){ renderConfirm(); return; }
+  const steps = SCHEMA[state.type].steps;
+  if(state.step>=steps.length){ renderReview(); return; }
+  renderStep(steps[state.step]);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------------- step indicator ---------------- */
+function stepper(active){
+  // active: index in STEP_NAMES (0 type,1..4 steps,5 review)
+  let h='<div class="stepper">';
+  STEP_NAMES.forEach((n,i)=>{
+    let cls = i<active?"done":(i===active?"current":"");
+    let inner = i<active?"✓":(i+1);
+    h+=`<div class="step ${cls}"><div class="dot">${inner}</div><span>${n}</span></div>`;
+    if(i<STEP_NAMES.length-1) h+=`<div class="bar ${i<active?'done':''}"></div>`;
+  });
+  return h+'</div>';
+}
+
+/* ---------------- TYPE SELECTION ---------------- */
+function renderTypeSelect(){
+  content.innerHTML = stepper(0) + `
+  <div class="banner">
+    <span>✦</span>
+    <div><b>Why we ask.</b> Reporting feeds our marketing, member search and league tables. Cleaner data means a stronger profile for every member.</div>
+  </div>
+  <div class="panel">
+    <h2>What kind of transaction are you reporting?</h2>
+    <p class="lead">Pick one. The form then asks <b>only</b> the questions that matter for that type.</p>
+    <div class="landing-meta">
+      <span>⏱ About 3 minutes</span>
+      <span>💾 Save and finish later, anytime</span>
+      <span>❓ Every field explained as you go</span>
+    </div>
+    <div class="typegrid">
+      <div class="typecard" data-t="mna">
+        <div class="ti">🤝</div>
+        <h3>M&amp;A</h3>
+        <p>A business was bought or sold — an acquisition, sale, merger or divestiture.</p>
+        <div class="ex">Most deals are M&amp;A. We'll need the buyer, the target, and your side.</div>
+      </div>
+      <div class="typecard" data-t="capital">
+        <div class="ti">💲</div>
+        <h3>Capital Raise</h3>
+        <p>A company raised funding — equity, debt or structured / hybrid capital.</p>
+        <div class="ex">We'll ask the amount and valuation, tuned to the capital type.</div>
+      </div>
+      <div class="typecard" data-t="advisory">
+        <div class="ti">📋</div>
+        <h3>Other Advisory</h3>
+        <p>Valuations, consulting and strategic advisory where you weren't the principal deal advisor.</p>
+        <div class="ex">Lighter on financials. Fairness opinions go under M&amp;A.</div>
+      </div>
+    </div>
+  </div>`;
+  document.querySelectorAll(".typecard").forEach(c=>{
+    c.onclick=()=>{
+      document.querySelectorAll(".typecard").forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");
+      const t=c.dataset.t;
+      setTimeout(()=>{ state.type=t; state.step=0; render(); },180);
+    };
+  });
+}
+
+/* ---------------- A STEP ---------------- */
+function renderStep(step){
+  const sIdx = state.step; // 0..3 maps to STEP_NAMES 1..4
+  let body = `<div class="panel"><h2>${step.title}</h2><p class="lead">${step.lead}</p>`;
+  if(step.info==="ev"){
+    body += `<div class="infobox"><span class="ii">ℹ︎</span><div><b>How we define Enterprise Value (EV).</b><br>
+      <code>EV = Market Cap (or Equity Value) + Total Debt + Preferred Equity + Minority Interest − Cash &amp; Cash Equivalents</code><br>
+      Using one definition across the network keeps our league tables and multiples comparable.</div></div>`;
+  }
+  step.fields.forEach(f=> body += renderField(f) );
+  body += `</div>`;
+
+  // layout: show tombstone preview alongside for steps after type select
+  const showPreview = (state.type==="mna" || state.type==="capital");
+  let html = stepper(sIdx+1);
+  if(showPreview){
+    html += `<div class="layout"><div>${body}${nav()}</div><div class="preview-wrap">${previewPanel()}</div></div>`;
+  } else {
+    html += body + nav();
+  }
+  content.innerHTML = html;
+  bindFields(step);
+  bindNav();
+  updatePreview();
+}
+
+/* ---------------- FIELD RENDERERS ---------------- */
+function renderField(f){
+  // special composite party blocks
+  if(f.type==="parties")    return partyBlock();
+  if(f.type==="partiesCap") return partyBlockCap();
+  if(f.type==="partiesAdv") return partyBlockAdv();
+  if(f.id==="country")    return countryField(f);
+  if(f.id==="sectors")    return multiComboField(f,"sectors");
+  if(f.id==="subsectors") return multiComboField(f,"subsectors");
+
+  const hidden = f.showIf && !evalShow(f.showIf) ? " hidden" : "";
+  const req = f.req?'<span class="req">*</span>':'';
+  let inner="";
+  const v = state.data[f.id];
+
+  switch(f.type){
+    case "choices":
+      inner = `<div class="choices ${f.id==='discDeal'?'yn':''}">` + f.options.map(o=>
+        `<div class="choice ${v===o.v?'sel':''}" data-f="${f.id}" data-v="${o.v}">
+           <div class="ch-t">${o.t}</div><div class="ch-d">${o.d}</div></div>`).join("") + `</div>`;
+      break;
+    case "toggle":
+      inner = `<div class="toggle" data-f="${f.id}">
+        <button data-v="true" class="${v===true?'on':''}">Yes</button>
+        <button data-v="false" class="${v===false?'on':''}">No</button></div>`;
+      if(f.id==="discDeal"||f.id==="discEV") inner += `<div data-badge="${f.id}"></div>`;
+      break;
+    case "chips":
+      inner = `<div class="chips" data-f="${f.id}">` + f.source.map(s=>
+        `<div class="chip ${(v||[]).includes(s)?'sel':''}" data-v="${s}">${s}</div>`).join("") + `</div>`;
+      break;
+    case "select":
+      inner = `<select data-f="${f.id}"><option value="">Select…</option>` +
+        f.source.map(s=>`<option ${v===s?'selected':''}>${s}</option>`).join("") + `</select>`;
+      break;
+    case "textarea":
+      inner = `<textarea data-f="${f.id}" placeholder="${f.placeholder||''}">${v||''}</textarea>`;
+      break;
+    case "date":
+      inner = `<input type="date" data-f="${f.id}" value="${v||''}">`;
+      break;
+    case "number":
+      inner = `<input type="number" step="any" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v??''}">`;
+      break;
+    case "amount":
+      inner = `<div class="row-amt"><input type="number" step="any" data-f="${f.id}" placeholder="Full notation, e.g. 30000000" value="${v??''}">
+        <select data-f="${f.curId}">${CURRENCIES.map(c=>`<option ${state.data[f.curId]===c?'selected':''}>${c}</option>`).join("")}</select></div>`;
+      break;
+    case "url":
+      inner = `<input type="url" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`;
+      break;
+    default:
+      inner = `<input type="text" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`;
+  }
+  return `<div class="field${hidden}" data-field="${f.id}">
+      <label>${f.label}${req}</label>
+      ${f.helper?`<p class="helper">${f.helper}</p>`:''}
+      ${inner}
+    </div>`;
+}
+
+/* party blocks – the heart of the M&A simplification */
+function partyBlock(){
+  const advised = state.data.advised;
+  const buyClient  = advised==="buy";
+  const sellClient = advised==="sell";
+  const tag = '<span class="role-tag">Your client</span>';
+  return `
+  <div class="field" data-field="_partyBlock">
+    <label>The two companies in the deal</label>
+    <p class="helper">Who's buying, who's being bought. We highlight your client based on the side you advised.</p>
+    <div class="party ${buyClient?'client':''}" data-party="buyer">
+      <h4>The Buyer / Acquirer ${buyClient?tag:''}</h4>
+      <p class="ph">The company doing the acquiring.</p>
+      <div class="row2">
+        <input type="text" data-f="buyerName" placeholder="Buyer company name" value="${state.data.buyerName||''}">
+        <input type="text" data-f="buyerHQ" placeholder="Buyer HQ (country)" value="${state.data.buyerHQ||''}">
+      </div>
+      <div style="margin-top:10px"><span class="mockfile">📎 Upload buyer logo (max 2 MB)</span></div>
+    </div>
+    <div class="party ${sellClient?'client':''}" data-party="target">
+      <h4>The Target / Seller ${sellClient?tag:''}</h4>
+      <p class="ph">The business being acquired or sold.</p>
+      <div class="row2">
+        <input type="text" data-f="targetName" placeholder="Target company name" value="${state.data.targetName||''}">
+        <input type="text" data-f="targetHQ" placeholder="Target HQ (country)" value="${state.data.targetHQ||''}">
+      </div>
+      <div style="margin-top:10px"><span class="mockfile">📎 Upload target logo (max 2 MB)</span></div>
+    </div>
+    ${advised==="fair"?`<p class="helper" style="margin-top:4px">Fairness opinion — fill in both parties; we'll note your independent role.</p>`:''}
+  </div>`;
+}
+function partyBlockCap(){
+  return `
+  <div class="field" data-field="_partyBlockCap">
+    <label>The company that raised capital</label>
+    <p class="helper">The issuer / borrower you advised.</p>
+    <div class="party client">
+      <h4>Company raising capital <span class="role-tag">Your client</span></h4>
+      <div class="row2">
+        <input type="text" data-f="companyName" placeholder="Company name" value="${state.data.companyName||''}">
+        <input type="text" data-f="companyHQ" placeholder="Company HQ (country)" value="${state.data.companyHQ||''}">
+      </div>
+      <div style="margin-top:10px"><span class="mockfile">📎 Upload company logo (max 2 MB)</span></div>
+    </div>
+    <div class="field" data-field="investor" style="margin-bottom:0">
+      <label>Lead investor / provider <span class="helper" style="display:inline">(optional)</span></label>
+      <p class="helper">Name the lead fund or lender, if public.</p>
+      <input type="text" data-f="investorName" placeholder="e.g. Acme Growth Partners" value="${state.data.investorName||''}">
+    </div>
+  </div>`;
+}
+function partyBlockAdv(){
+  return `
+  <div class="field" data-field="_partyBlockAdv">
+    <label>Your client</label>
+    <p class="helper">The party you advised on this engagement.</p>
+    <div class="party client">
+      <h4>Client <span class="role-tag">Your client</span></h4>
+      <div class="row2">
+        <input type="text" data-f="clientName" placeholder="Client name" value="${state.data.clientName||''}">
+        <input type="text" data-f="clientHQ" placeholder="Client HQ (country)" value="${state.data.clientHQ||''}">
+      </div>
+    </div>
+  </div>`;
+}
+
+
+/* ---- searchable dropdowns: no typos, sub-sectors filtered by sector ---- */
+function comboOptions(key){
+  if(key==="countries")  return COUNTRY_LIST;
+  if(key==="sectors")    return SECTORS;
+  if(key==="subsectors") return subsForSelected(state.data.sectors||[]);
+  return [];
+}
+function esc(v){ return (v+"").replace(/&/g,"&amp;").replace(/"/g,"&quot;"); }
+function countryField(f){
+  const v=state.data.country||"";
+  const req=f.req?'<span class="req">*</span>':'';
+  return `<div class="field" data-field="country">
+    <label>${f.label}${req}</label>
+    ${f.helper?`<p class="helper">${f.helper} Start typing to search the list.</p>`:''}
+    <div class="combo" data-combo="countries" data-mode="single">
+      <input type="text" class="combo-input" data-f="country" placeholder="Type to search countries…" value="${esc(v)}" autocomplete="off">
+      <span class="combo-caret">▾</span>
+      <div class="combo-menu hidden"></div>
+    </div>
+  </div>`;
+}
+function multiComboField(f,key){
+  const req=f.req?'<span class="req">*</span>':'';
+  const ph = key==="subsectors" ? "Search and add sub-sectors…" : "Search and add sectors…";
+  return `<div class="field" data-field="${key}">
+    <label>${f.label}${req}</label>
+    ${f.helper?`<p class="helper">${f.helper}</p>`:''}
+    <div class="combo" data-combo="${key}" data-mode="multi">
+      <div class="combo-box"><span class="combo-chips"></span><input type="text" class="combo-input" placeholder="${ph}" autocomplete="off"></div>
+      <div class="combo-menu hidden"></div>
+    </div>
+  </div>`;
+}
+function initCombos(step){
+  if(!window.__comboDoc){
+    document.addEventListener("click",e=>{
+      document.querySelectorAll(".combo").forEach(c=>{ if(!c.contains(e.target)){ const m=c.querySelector(".combo-menu"); if(m) m.classList.add("hidden"); } });
+    });
+    window.__comboDoc=true;
+  }
+  content.querySelectorAll(".combo").forEach(c=>{
+    const key=c.dataset.combo, mode=c.dataset.mode;
+    const input=c.querySelector(".combo-input"), menu=c.querySelector(".combo-menu");
+    if(mode==="multi") renderChips(c,key);
+    const open=()=>{ renderMenu(c,key,input.value); menu.classList.remove("hidden"); };
+    input.addEventListener("focus",open);
+    input.addEventListener("click",open);
+    input.addEventListener("input",open);
+    if(mode==="single") input.addEventListener("blur",()=>setTimeout(()=>{ input.value=state.data.country||""; },150));
+  });
+}
+function renderMenu(c,key,filter){
+  const menu=c.querySelector(".combo-menu"), mode=c.dataset.mode;
+  if(key==="subsectors" && (state.data.sectors||[]).length===0){ menu.innerHTML='<div class="combo-empty">Pick a sector first — sub-sectors are filtered to match.</div>'; return; }
+  const sel = mode==="multi" ? (state.data[key]||[]) : [];
+  const fl=(filter||"").toLowerCase();
+  const list=comboOptions(key).filter(o=>o.toLowerCase().includes(fl) && !sel.includes(o));
+  if(list.length===0){ menu.innerHTML='<div class="combo-empty">No matches.</div>'; return; }
+  menu.innerHTML=list.map(o=>`<div class="combo-opt" data-v="${esc(o)}">${o}</div>`).join("");
+  menu.querySelectorAll(".combo-opt").forEach(opt=>{
+    opt.onclick=(e)=>{ e.stopPropagation(); chooseOption(c,key,opt.dataset.v); };
+  });
+}
+function chooseOption(c,key,val){
+  const input=c.querySelector(".combo-input"), menu=c.querySelector(".combo-menu"), mode=c.dataset.mode;
+  if(mode==="single"){
+    state.data.country=val; input.value=val; setRegionFromCountry(val);
+    menu.classList.add("hidden"); clearErr(c.closest(".field")); flagSaved(); updatePreview();
+  } else {
+    let arr=state.data[key]||[]; if(!arr.includes(val)) arr=[...arr,val]; state.data[key]=arr;
+    input.value=""; renderChips(c,key); renderMenu(c,key,""); menu.classList.remove("hidden");
+    if(key==="sectors") syncSubsectors();
+    clearErr(c.closest(".field")); flagSaved(); input.focus();
+  }
+}
+function renderChips(c,key){
+  const wrap=c.querySelector(".combo-chips"); if(!wrap) return;
+  const arr=state.data[key]||[];
+  wrap.innerHTML=arr.map(v=>`<span class="combo-tag"><b>${v}</b><span class="x" data-v="${esc(v)}">×</span></span>`).join("");
+  wrap.querySelectorAll(".x").forEach(x=>x.onclick=(e)=>{
+    e.stopPropagation();
+    state.data[key]=(state.data[key]||[]).filter(v=>v!==x.dataset.v);
+    renderChips(c,key); renderMenu(c,key,"");
+    if(key==="sectors") syncSubsectors();
+    flagSaved();
+  });
+}
+function syncSubsectors(){
+  const allowed=subsForSelected(state.data.sectors||[]);
+  state.data.subsectors=(state.data.subsectors||[]).filter(x=>allowed.includes(x));
+  const sc=content.querySelector('.combo[data-combo="subsectors"]');
+  if(sc){ renderChips(sc,"subsectors"); renderMenu(sc,"subsectors",""); }
+}
+function setRegionFromCountry(name){
+  const r=COUNTRIES[name]||"";
+  if(r){ state.data.region=r; const sel=content.querySelector('[data-f="region"]'); if(sel){ sel.value=r; clearErr(sel.closest(".field")); } }
+}
+
+/* ---------------- bind inputs ---------------- */
+function bindFields(step){
+  // text/number/textarea/select/date/url
+  content.querySelectorAll("[data-f]").forEach(el=>{
+    if(el.classList.contains("combo-input")) return;
+    if(el.tagName==="INPUT" && el.type!=="button" || el.tagName==="TEXTAREA"){
+      el.addEventListener("input", ()=>{ setVal(el.dataset.f, el.type==="number"?(el.value===""?"":parseFloat(el.value)):el.value); maybeRegion(el.dataset.f); el.classList.remove("input-err"); clearErr(el.closest(".field")); updatePreview(); });
+    }
+    if(el.tagName==="SELECT"){
+      el.addEventListener("change", ()=>{ setVal(el.dataset.f, el.value); maybeRegion(el.dataset.f); clearErr(el.closest(".field")); applyConditions(step); updatePreview(); });
+    }
+  });
+  // choices
+  content.querySelectorAll(".choice").forEach(c=>{
+    c.onclick=()=>{
+      const f=c.dataset.f, v=c.dataset.v;
+      setVal(f,v);
+      content.querySelectorAll(`.choice[data-f="${f}"]`).forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");
+      clearErr(c.closest(".field"));
+      // re-render step to reflect dynamic relabeling (party highlight, conditional fields)
+      if(f==="advised"||f==="natureCap"||f==="natureAdv"){ refreshDynamic(step); }
+      else applyConditions(step);
+      updatePreview();
+    };
+  });
+  // toggles
+  content.querySelectorAll(".toggle").forEach(t=>{
+    t.querySelectorAll("button").forEach(b=>{
+      b.onclick=()=>{
+        const f=t.dataset.f, v=b.dataset.v==="true";
+        setVal(f,v);
+        t.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+        b.classList.add("on");
+        clearErr(t.closest(".field"));
+        applyConditions(step); updateBadges(); updatePreview();
+      };
+    });
+  });
+  updateBadges();
+  // chips
+  content.querySelectorAll(".chips").forEach(group=>{
+    group.querySelectorAll(".chip").forEach(chip=>{
+      chip.onclick=()=>{
+        const f=group.dataset.f, val=chip.dataset.v;
+        let arr = state.data[f]||[];
+        if(arr.includes(val)) arr=arr.filter(x=>x!==val); else arr=[...arr,val];
+        state.data[f]=arr; chip.classList.toggle("sel"); flagSaved();
+        clearErr(group.closest(".field"));
+      };
+    });
+  });
+  initCombos(step);
+}
+
+function maybeRegion(fid){
+  if(fid==="country"){ /* tiny auto-suggest demo */
+    const c=(state.data.country||"").toLowerCase();
+    let r="";
+    if(/austral|new zealand|singapore|japan|indonesia|malaysia|korea|china/.test(c)) r="Asia-Pacific (incl. Australia/NZ)";
+    else if(/india|pakistan|bangladesh|sri lanka/.test(c)) r="South Asia";
+    else if(/netherl|german|france|spain|italy|uk|united kingdom|ireland|sweden|poland/.test(c)) r="Europe";
+    else if(/united states|usa|canada|mexico/.test(c)) r="North America";
+    else if(/brazil|chile|argentina|colombia|peru/.test(c)) r="Latin America & Caribbean";
+    if(r){ state.data.region=r; const sel=content.querySelector('[data-f="region"]'); if(sel) sel.value=r; }
+  }
+}
+
+let autosaveTimer=null;
+function setVal(f,v){ state.data[f]=v; flagSaved(); }
+function flagSaved(){
+  const el=document.getElementById("autosave"); if(!el) return;
+  el.classList.add("show");
+  clearTimeout(autosaveTimer);
+  autosaveTimer=setTimeout(()=>{ /* stays shown; reassurance is the point */ },1000);
+}
+
+/* plain-English visibility badges (most common point of confusion) */
+function updateBadges(){
+  content.querySelectorAll("[data-badge]").forEach(b=>{
+    const f=b.dataset.badge, on=state.data[f]===true;
+    if(f==="discDeal"){
+      b.className="vis-badge "+(on?"pub":"int");
+      b.innerHTML = on
+        ? "🌐 Visible to the whole Globalscope network &amp; the public website"
+        : "🔒 Kept internal — used only for league tables &amp; analysis";
+    } else { // discEV / size
+      b.className="vis-badge "+(on?"pub":"int");
+      b.innerHTML = on
+        ? "🌐 May appear publicly — only if you include the figure in your description"
+        : "🔒 Figures used internally only";
+    }
+  });
+}
+
+/* re-render current step (used when a driver answer changes layout) */
+function refreshDynamic(step){ renderStep(step); }
+
+/* show/hide conditional fields without full re-render (keeps focus) */
+function applyConditions(step){
+  step.fields.forEach(f=>{
+    if(!f.showIf) return;
+    const wrap = content.querySelector(`[data-field="${f.id}"]`);
+    if(!wrap) return;
+    wrap.classList.toggle("hidden", !evalShow(f.showIf));
+  });
+}
+function evalShow(cond){
+  const val = state.data[cond.f];
+  if("eq" in cond) return val===cond.eq;
+  if("in" in cond) return cond.in.includes(val);
+  return true;
+}
+
+/* ---------------- tombstone preview ---------------- */
+function previewPanel(){
+  return `<div class="preview-label">Live tombstone preview</div>
+    <div class="tombstone" id="tomb">
+      <div class="tt-head">GLOBALSCOPE</div>
+      <div class="tt-body" id="tombBody"></div>
+    </div>
+    <p class="preview-note">Updates as you type, so you see exactly how the deal will appear before you submit.</p>`;
+}
+function updatePreview(){
+  const body = document.getElementById("tombBody");
+  if(!body) return;
+  const d=state.data;
+  if(state.type==="mna"){
+    const buyer = d.buyerName||"Buyer";
+    const target= d.targetName||"Target";
+    let verb = d.verb;
+    if(!verb){
+      verb = d.advised==="fair" ? "Fairness opinion on the acquisition of"
+            : "has acquired";
+    }
+    body.innerHTML = `
+      <div class="logo-slot">${target}</div>
+      <div class="verb">${d.advised==="fair"?"Fairness opinion — acquisition of":"has been acquired by"}</div>
+      <div class="logo-slot">${buyer}</div>
+      <div class="meta">${[d.country, d.closeDate?fmtYear(d.closeDate):"", (d.sectors&&d.sectors[0])||""].filter(Boolean).join(" · ")||"Geography · Year · Sector"}</div>`;
+  } else if(state.type==="capital"){
+    const co=d.companyName||"Company";
+    const amt = d.amount?fmtMoney(d.amount,d.amtCcy):"Capital raise";
+    const nat = ({equity:"Equity raise",debt:"Debt raise",hybrid:"Structured raise"})[d.natureCap]||"Capital raise";
+    body.innerHTML = `
+      <div class="logo-slot">${co}</div>
+      <div class="verb">${nat}${d.amount?" · "+amt:""}</div>
+      <div class="meta">${[d.country, d.closeDate?fmtYear(d.closeDate):"", (d.sectors&&d.sectors[0])||""].filter(Boolean).join(" · ")||"Geography · Year · Sector"}</div>`;
+  }
+}
+function fmtYear(dstr){ const y=(dstr||"").slice(0,4); return y||""; }
+function fmtMoney(n,c){ if(n==null||n==="")return ""; const num=Number(n);
+  if(num>=1e9) return (c||"")+ " " + (num/1e9).toFixed(1)+"bn";
+  if(num>=1e6) return (c||"")+ " " + (num/1e6).toFixed(0)+"m";
+  return (c||"")+" "+num.toLocaleString(); }
+
+/* ---------------- nav ---------------- */
+function nav(){
+  const steps=SCHEMA[state.type].steps;
+  const last = state.step===steps.length-1;
+  return `<div class="actions">
+    <div>${state.step>0?'<button class="btn btn-ghost" id="back">‹ Back</button>':'<button class="btn btn-ghost" id="changeType">‹ Change type</button>'}</div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <button class="btn-draft" id="draft">Save as draft</button>
+      <button class="btn btn-primary" id="next">${last?'Review ›':'Continue ›'}</button>
+    </div>
+  </div>`;
+}
+function bindNav(){
+  const b=$("#back"); if(b) b.onclick=()=>{ state.step--; render(); };
+  const ct=$("#changeType"); if(ct) ct.onclick=()=>{ state.type=null; state.step=0; render(); };
+  const n=$("#next"); if(n) n.onclick=()=>{
+    const step=SCHEMA[state.type].steps[state.step];
+    if(validateStep(step)){ state.step++; render(); }
+  };
+  const d=$("#draft"); if(d) d.onclick=()=>{ d.textContent="✓ Draft saved"; flagSaved(); setTimeout(()=>d.textContent="Save as draft",1600); };
+}
+
+/* ---- gentle validation: stop members sailing past a blank required field ---- */
+function clearErr(fieldEl){ if(fieldEl) fieldEl.classList.remove("err"); const vn=$("#valnote"); if(vn && !content.querySelector(".field.err")) vn.remove(); }
+function isEmpty(v){ return v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0); }
+
+function validateStep(step){
+  // clear prior
+  content.querySelectorAll(".field.err").forEach(e=>e.classList.remove("err"));
+  content.querySelectorAll(".input-err").forEach(e=>e.classList.remove("input-err"));
+  const oldNote=$("#valnote"); if(oldNote) oldNote.remove();
+
+  const missing=[]; // {label, fieldId?, inputName?}
+  // declared required, visible fields
+  step.fields.forEach(f=>{
+    if(!f.req) return;
+    if(f.showIf && !evalShow(f.showIf)) return;
+    if(isEmpty(state.data[f.id])) missing.push({label:f.label, fieldId:f.id});
+  });
+  // composite party essentials
+  if(step.key==="parties"){
+    if(state.type==="mna"){
+      if(isEmpty(state.data.buyerName)) missing.push({label:"Buyer / Acquirer name", inputName:"buyerName"});
+      if(isEmpty(state.data.targetName)) missing.push({label:"Target / Seller name", inputName:"targetName"});
+    } else if(state.type==="capital"){
+      if(isEmpty(state.data.companyName)) missing.push({label:"Company name", inputName:"companyName"});
+    } else if(state.type==="advisory"){
+      if(isEmpty(state.data.clientName)) missing.push({label:"Client name", inputName:"clientName"});
+    }
+  }
+  if(missing.length===0) return true;
+
+  // highlight
+  missing.forEach(m=>{
+    if(m.fieldId){ const w=content.querySelector(`[data-field="${m.fieldId}"]`); if(w) w.classList.add("err"); }
+    if(m.inputName){ const inp=content.querySelector(`[data-f="${m.inputName}"]`); if(inp){ inp.classList.add("input-err"); inp.closest(".field")?.classList.add("err"); } }
+  });
+  const note=document.createElement("div");
+  note.className="valnote"; note.id="valnote";
+  note.innerHTML=`<span>⚠️</span><div><b>Almost there.</b> Please complete: ${missing.map(m=>m.label).join(", ")}. You can still <b>Save as draft</b> and finish later.</div>`;
+  const panel=content.querySelector(".panel");
+  panel.insertBefore(note, panel.querySelector(".infobox")||panel.querySelector(".field"));
+  const first=content.querySelector(".field.err"); if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
+  return false;
+}
+
+/* ---------------- review ---------------- */
+function renderReview(){
+  const d=state.data;
+  const t=state.type;
+  const showPreview=(t==="mna"||t==="capital");
+  let groups="";
+
+  const partyRows = t==="mna"
+    ? [["Side advised", ({sell:"Sell-side",buy:"Buy-side",fair:"Fairness opinion"})[d.advised]||"—"],
+       ["Buyer / Acquirer", d.buyerName||"—"], ["Target / Seller", d.targetName||"—"],
+       ["Completion date", d.closeDate||"—"]]
+    : t==="capital"
+    ? [["Capital type", ({equity:"Equity",debt:"Debt",hybrid:"Hybrid / structured"})[d.natureCap]||"—"],
+       ["Company", d.companyName||"—"], ["Lead investor", d.investorName||"—"],
+       ["Completion date", d.closeDate||"—"]]
+    : [["Assignment", d.natureAdv||"—"], ["Client", d.clientName||"—"], ["Completion date", d.closeDate||"—"]];
+
+  groups += reviewGroup("Parties & role", 0, partyRows);
+  groups += reviewGroup("Details", 1, [
+    ["Sector(s)", (d.sectors||[]).join(", ")||"—"],
+    ["Sub-sector(s)", (d.subsectors||[]).join(", ")||"—"],
+    ["Country", d.country||"—"], ["Region", d.region||"—"],
+    ["Description", d.desc||"—"], ["Public link", d.prurl||"—"]
+  ]);
+  const finRows = t==="mna"
+    ? [["Shown externally", yn(d.discDeal)], ["Enterprise Value", money(d.ev,d.evCcy)],
+       ["EV shown externally", yn(d.discEV)], ["EV / EBITDA", d.evEbitda??"—"], ["EV / Revenue", d.evRev??"—"]]
+    : t==="capital"
+    ? [["Shown externally", yn(d.discDeal)], ["Amount raised", money(d.amount,d.amtCcy)],
+       ["Post-money equity val.", money(d.postEq,d.postEqCcy)], ["Post-money EV", money(d.postEV,d.postEVCcy)],
+       ["Figures shown externally", yn(d.discEV)]]
+    : [["Shown externally", yn(d.discDeal)], ["Relevant size", money(d.size,d.sizeCcy)], ["Size shown externally", yn(d.discEV)]];
+  groups += reviewGroup("Financials", 2, finRows);
+  groups += reviewGroup("Recognition", 3, [
+    ["Collaborated w/ member", yn(d.collab)],
+    ["Partner firm", d.collabMember||"—"],
+    ["Tagged", (d.tagged||[]).join(", ")||"—"]
+  ]);
+
+  let body=`<div class="panel"><h2>Review &amp; submit</h2>
+    <p class="lead">Everything in one place. Click <b>Edit</b> on any section to jump back.</p>${groups}
+    <div class="actions" style="margin-top:18px">
+      <button class="btn btn-ghost" id="back">‹ Back</button>
+      <button class="btn btn-primary" id="submit">Submit transaction ✓</button>
+    </div></div>`;
+
+  let html=stepper(5);
+  html += showPreview
+    ? `<div class="layout"><div>${body}</div><div class="preview-wrap">${previewPanel()}</div></div>`
+    : body;
+  content.innerHTML=html;
+  $("#back").onclick=()=>{ state.step=SCHEMA[state.type].steps.length-1; render(); };
+  $("#submit").onclick=()=>{ state.step=99; render(); };
+  document.querySelectorAll("[data-jump]").forEach(a=>a.onclick=()=>{ state.step=parseInt(a.dataset.jump); render(); });
+  updatePreview();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function reviewGroup(title, jump, rows){
+  return `<div class="review-grp"><div class="rg-head">${title}<a data-jump="${jump}">Edit</a></div>
+    <dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></div>`;
+}
+function yn(v){ return v===true?"Yes":v===false?"No":"—"; }
+function money(n,c){ if(n==null||n==="")return "—"; return (c||"")+" "+Number(n).toLocaleString(); }
+
+/* ---------------- confirmation ---------------- */
+function renderConfirm(){
+  content.innerHTML = stepper(6).replace('stepper','stepper') + `
+  <div class="panel"><div class="confirm">
+    <div class="ok">✓</div>
+    <h2>Transaction submitted</h2>
+    <p>Thanks, Brendan. Your submission is with the Globalscope team for review. You'll be notified when it's live — usually within one business day.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn btn-ghost" id="wzAnother">Report another</button>
+      <button class="btn btn-primary" id="wzDone">Back to Transactions</button>
+    </div>
+  </div></div>`;
+  var _a=document.getElementById("wzAnother"); if(_a)_a.onclick=function(){resetAll();};
+  var _d=document.getElementById("wzDone"); if(_d)_d.onclick=function(){ if(EXIT) EXIT(); };
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetAll(){
+  state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
+            discDeal:true, discEV:true, collab:false, tagged:["You (Brendan Cockram)"], sectors:[], subsectors:[] } };
+  render();
+}
+
+return { open: open };
+})();
+
+/* boot */
+if(!location.hash) location.hash="#/dashboard";
+route();
+</script>
+</body>
+</html>
