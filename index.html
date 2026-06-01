@@ -288,6 +288,7 @@
 .highlights{margin:0;padding-left:18px}
 .highlights li{margin:5px 0;font-size:13.5px}
 .teaserpanel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px}
+.cc-av{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-d);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
 /* richer opportunity deal card */
 .deal-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;overflow:hidden;transition:transform .12s,box-shadow .12s}
 .deal-card:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(22,36,61,.12)}
@@ -451,13 +452,13 @@ const TXNS = [
 ];
 const OPPS = [
   {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"€100M+", file:"Public", region:"South Asia", sector:"TMT",
-   desc:"Profitable banking-software business; founders seeking a full exit.", highlights:["≈ €18m ARR, growing 30% YoY","Blue-chip banking customer base, <5% churn","Experienced management team staying on"], teaser:"Project-HiTech-Teaser.pdf"},
+   desc:"Profitable banking-software business; founders seeking a full exit.", highlights:["≈ €18m ARR, growing 30% YoY","Blue-chip banking customer base, <5% churn","Experienced management team staying on"], teaser:"Project-HiTech-Teaser.pdf", contact:{name:"Anil Rungta",role:"Managing Partner",email:"anil.rungta@rungta-demo.com"}},
   {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€20M", file:"Public", region:"Latin America & Caribbean", sector:"Industrials",
-   desc:"Buy-side mandate: seeking precision-component bolt-ons across Latin America.", highlights:["Active acquirer, funded and ready","Seeking €5–20m EV targets","Management retention preferred"], teaser:"Voyager-Buy-Mandate.pdf"},
+   desc:"Buy-side mandate: seeking precision-component bolt-ons across Latin America.", highlights:["Active acquirer, funded and ready","Seeking €5–20m EV targets","Management retention preferred"], teaser:"Voyager-Buy-Mandate.pdf", contact:{name:"Marie Laurent",role:"Director",email:"m.laurent@capitaltimes-demo.com"}},
   {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"< €5M", file:"Public", region:"Asia-Pacific", sector:"Industrials",
-   desc:"Specialist electrical contractor with a strong recurring maintenance book.", highlights:["Recurring revenue ≈ 60% of sales","Long-standing tier-1 client relationships","Clean balance sheet"], teaser:"Project-Pulse-IM.pdf"},
+   desc:"Specialist electrical contractor with a strong recurring maintenance book.", highlights:["Recurring revenue ≈ 60% of sales","Long-standing tier-1 client relationships","Clean balance sheet"], teaser:"Project-Pulse-IM.pdf", contact:{name:"James Wright",role:"Partner",email:"j.wright@octavian-demo.com"}},
   {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer",
-   desc:"Buy-side: premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null}
+   desc:"Buy-side: premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null, contact:{name:"Sarah Klein",role:"Managing Director",email:"s.klein@paramax-demo.com"}}
 ];
 const FIRMS = [
   {name:"Octavian Group", loc:"Sydney, Australia", region:"Asia-Pacific", logo:"OCTAVIAN", x:"83%", y:"80%"},
@@ -744,11 +745,20 @@ function showOpp(i){
           ${o.teaser?`<div style="display:flex;align-items:center;gap:11px;margin-bottom:14px"><div style="width:38px;height:46px;border-radius:6px;background:#eef3f8;display:flex;align-items:center;justify-content:center;font-size:18px">📄</div><div><div style="font-size:13px;font-weight:600">${o.teaser}</div><div class="helper" style="margin:0">PDF · visibility: ${o.file}</div></div></div>
           <button class="btn btn-primary" style="width:100%" onclick="downloadTeaser('${o.teaser}')">Download teaser</button>`
           :`<p class="helper" style="margin:0">No teaser attached to this opportunity.</p>`}
-          <p class="helper" style="margin-top:14px">Contact ${o.firm} through the network to discuss further.</p>
+        </div>
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:18px 0 8px;font-weight:600">Advisor</div>
+        <div class="teaserpanel">
+          <div style="display:flex;align-items:center;gap:11px"><div class="cc-av">${(o.contact.name||'').split(' ').map(w=>w[0]).join('').slice(0,2)}</div><div><div style="font-size:13px;font-weight:600">${o.contact.name}</div><div class="helper" style="margin:0">${o.contact.role} · ${o.firm}</div></div></div>
+          <button class="btn btn-primary" id="oContact" style="width:100%;margin-top:14px">Contact advisor</button>
+          <div id="oReveal" style="display:none;margin-top:12px">
+            <a href="mailto:${o.contact.email}" style="color:var(--accent);font-weight:600;font-size:13px">${o.contact.email}</a>
+            <p class="helper" style="margin-top:8px">✓ Interest registered — ${o.firm} has been notified. <span style="color:var(--muted)">(demo — this is where the click-through would be tracked)</span></p>
+          </div>
         </div>
       </div>
     </div>`;
   document.getElementById("back").onclick=()=>navTo("opportunities");
+  const cbtn=document.getElementById("oContact"); if(cbtn) cbtn.onclick=()=>{ document.getElementById("oReveal").style.display="block"; cbtn.textContent="✓ Contact shown · interest logged"; cbtn.disabled=true; };
   closeNav(); window.scrollTo({top:0});
 }
 function downloadTeaser(name){
