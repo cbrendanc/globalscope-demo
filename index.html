@@ -262,6 +262,11 @@
 .tcard .tt-rel{font-style:italic;color:var(--muted);font-size:12px;margin:9px 0}
 .tcard .tt-foot{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted);line-height:1.55}
 .tcard .tt-adv{color:var(--accent-d);font-weight:600}
+.tcard .side-pill{font-size:10px;font-weight:600;letter-spacing:.3px;border-radius:6px;padding:2px 8px}
+.side-pill.sell{background:#eaf4ee;color:#1c7a4f}
+.side-pill.buy{background:#e8f0f8;color:#246390}
+.side-pill.cap{background:#fbf2e2;color:#8a5a12}
+.side-pill.adv{background:#eef1f6;color:#4c5b74}
 
 /* detail view */
 .detail{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start}
@@ -299,6 +304,9 @@
 .deal-card .dc-foot{margin-top:auto;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
 .deal-card .dc-foot .view{color:var(--accent);font-weight:600}
 .dc-teaser{display:inline-flex;align-items:center;gap:5px;color:var(--accent-d);font-size:11.5px;font-weight:600}
+.deal-card .dc-mandate{margin-left:auto;font-size:11px;color:var(--muted)}
+.deal-card .dc-desc{margin:11px 16px 0;font-size:13px;color:var(--ink);line-height:1.55}
+.deal-card .dc-meta{color:var(--muted)}
 
 /* firm card */
 .fcard{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;text-align:center}
@@ -441,13 +449,13 @@ const TXNS = [
 ];
 const OPPS = [
   {project:"Project HiTech", date:"21 May 2026", firm:"Rungta Advisors", type:"Sell-side", mandate:"Not yet", value:"€100M+", file:"Public", region:"South Asia", sector:"TMT",
-   desc:"A profitable, founder-led enterprise software business serving banking clients across South Asia. Shareholders are exploring a full sale to a strategic or financial buyer to support the next phase of growth.", highlights:["≈ €18m ARR, growing 30% YoY","Blue-chip banking customer base, <5% churn","Experienced management team staying on"], teaser:"Project-HiTech-Teaser.pdf"},
+   desc:"Profitable banking-software business; founders seeking a full exit.", highlights:["≈ €18m ARR, growing 30% YoY","Blue-chip banking customer base, <5% churn","Experienced management team staying on"], teaser:"Project-HiTech-Teaser.pdf"},
   {project:"Voyager", date:"12 May 2026", firm:"Capital Times", type:"Buy-side", mandate:"Exclusive", value:"€5–€20M", file:"Public", region:"Latin America & Caribbean", sector:"Industrials",
-   desc:"On behalf of a European industrials group, seeking bolt-on acquisition targets in precision components across Latin America. Open to majority or 100% stakes.", highlights:["Active acquirer, funded and ready","Seeking €5–20m EV targets","Management retention preferred"], teaser:"Voyager-Buy-Mandate.pdf"},
+   desc:"Buy-side mandate: seeking precision-component bolt-ons across Latin America.", highlights:["Active acquirer, funded and ready","Seeking €5–20m EV targets","Management retention preferred"], teaser:"Voyager-Buy-Mandate.pdf"},
   {project:"Project Pulse", date:"08 May 2026", firm:"Octavian Group", type:"Sell-side", mandate:"Exclusive", value:"< €5M", file:"Public", region:"Asia-Pacific", sector:"Industrials",
-   desc:"Sale of a specialist electrical engineering contractor in Australia with a strong recurring maintenance book and blue-chip resources-sector clients.", highlights:["Recurring revenue ≈ 60% of sales","Long-standing tier-1 client relationships","Clean balance sheet"], teaser:"Project-Pulse-IM.pdf"},
+   desc:"Specialist electrical contractor with a strong recurring maintenance book.", highlights:["Recurring revenue ≈ 60% of sales","Long-standing tier-1 client relationships","Clean balance sheet"], teaser:"Project-Pulse-IM.pdf"},
   {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer",
-   desc:"A North American consumer group seeking acquisitions in premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null}
+   desc:"Buy-side: premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null}
 ];
 const FIRMS = [
   {name:"Octavian Group", loc:"Sydney, Australia", region:"Asia-Pacific", logo:"OCTAVIAN", x:"83%", y:"80%"},
@@ -483,6 +491,7 @@ const NOTIFS = [
 
 /* ---------- helpers ---------- */
 function opt(list,sel){ return list.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join(""); }
+function cap(str,n){ str=(str||'').trim(); return str.length>n?str.slice(0,n-1).trimEnd()+'…':str; }
 function tabs(items, activeIdx, ctaIdx){
   return `<div class="tabs">${items.map((t,i)=>`<div class="tab ${i===activeIdx?'active':''} ${i===ctaIdx?'cta':''}" data-tab="${i}">${t}</div>`).join("")}</div>`;
 }
@@ -550,12 +559,12 @@ const PAGES = {
   }, mount(){
     const grid=document.getElementById("grid");
     const card=o=>`<div class="deal-card" data-opp="${o._i}">
-      <div class="dc-top"><span class="deal-pill ${o.type==='Sell-side'?'sell':'buy'}">${o.type}</span><span class="badge active">Active</span><span class="dc-date">${o.date}</span></div>
+      <div class="dc-top"><span class="deal-pill ${o.type==='Sell-side'?'sell':'buy'}">${o.type}</span><span class="dc-mandate">${o.mandate}</span></div>
       <h3>${o.project}</h3>
-      <div class="dc-firm">${o.firm} · ${o.mandate}</div>
-      <div class="dc-desc">${o.desc||''}</div>
+      <div class="dc-firm">${o.firm}</div>
+      <div class="dc-desc">${cap(o.desc,90)}</div>
       <div class="dc-tags"><span class="dc-tag">${o.sector}</span><span class="dc-tag">${o.region}</span><span class="dc-tag">${o.value}</span></div>
-      <div class="dc-foot">${o.teaser?`<span class="dc-teaser">📎 Teaser</span>`:`<span></span>`}<span class="view">View details ›</span></div>
+      <div class="dc-foot"><span class="dc-meta">${o.date}${o.teaser?` · <span class="dc-teaser">📎 Teaser</span>`:''}</span><span class="view">View details ›</span></div>
     </div>`;
     wireFilters(OPPS.map((o,i)=>({...o,_i:i})),["type","region","sector"],
       (o,v)=>(!v.q||(o.project+o.firm+(o.desc||"")).toLowerCase().includes(v.q))&&(!v.type||o.type===v.type)&&(!v.region||o.region===v.region)&&(!v.sector||o.sector===v.sector),
@@ -580,12 +589,13 @@ const PAGES = {
       + `<div class="grid" id="grid"></div>`;
   }, mount(){
     const grid=document.getElementById("grid");
+    const sideCls=x=>x==="Sell-side"?"sell":x==="Buy-side"?"buy":x==="Capital raise"?"cap":"adv";
     const card=(t,i)=>`<div class="tcard" data-txn="${i}">
-      <div class="top"><span class="flags">${t.flags}</span><span class="firm">${t.advisor}</span></div>
+      <div class="top"><span class="flags">${t.flags}</span><span class="side-pill ${sideCls(t.side)}">${t.side}</span></div>
       <div class="tt-in">
         <div class="tt-party">${t.target}</div>
         ${t.acquirer?`<div class="tt-rel">${t.rel}</div><div class="tt-party acq">${t.acquirer}</div>`:`<div class="tt-rel">Strategic advisory</div>`}
-        <div class="tt-foot">${t.region} · ${t.year} · ${t.sector}<br><span class="tt-adv">Advised by ${t.advisor} · ${t.side}</span></div>
+        <div class="tt-foot">${t.region} · ${t.year} · ${t.sector}<br><span class="tt-adv">Advised by ${t.advisor}</span></div>
       </div></div>`;
     wireFilters(TXNS.map((t,i)=>({...t,_i:i})),["sector","region"],
       (t,v)=>(!v.q||(t.target+t.acquirer+t.advisor+t.desc).toLowerCase().includes(v.q))&&(!v.sector||t.sector===v.sector)&&(!v.region||t.region===v.region),
@@ -788,7 +798,7 @@ function renderOpp(){
         <div class="field"><label>Estimated value</label><p class="helper">A band is fine — signals scale without disclosing specifics.</p><select id="o_value"><option value="">Select…</option>${opt(VALUE_BANDS,d.value)}</select></div>
         <div class="field"><label>Mandate status</label><p class="helper">How firm is your engagement on this deal?</p><select id="o_mandate">${opt(["Not yet","Exclusive","Co-exclusive"],d.mandate)}</select></div>
       </div>
-      <div class="field"><label>Opportunity overview <span class="req">*</span></label><p class="helper">An anonymised description members will read — the business, the rationale, and what you're seeking. Keep the client unidentifiable.</p><textarea id="o_desc" placeholder="Describe the opportunity…">${d.desc||''}</textarea></div>
+      <div class="field"><label>Headline summary <span class="req">*</span></label><p class="helper">The one line members see on the tile — the business and what you're seeking. No preamble; the ~90-character limit keeps it punchy.</p><input type="text" id="o_desc" maxlength="90" placeholder="e.g. Profitable banking-software business; founders seeking a full exit." value="${d.desc||''}"></div>
       <div class="field"><label>Key highlights</label><p class="helper">Optional. One per line — the punchy points that make this stand out (scale, growth, margins, strategic angle).</p><textarea id="o_high" placeholder="e.g. €12m revenue, 20% EBITDA margin&#10;Blue-chip customer base&#10;Founder seeking a clean exit">${(d.highlights||[]).join("\n")}</textarea></div>
       <div class="field"><label>Teaser document</label><p class="helper">Upload a teaser (PDF) members can download to learn more. Its visibility follows the deal-file setting below.</p>
         <div id="o_teaserwrap">${d.teaser?`<span class="mockfile">📎 ${d.teaser}</span> <span class="lnk" id="o_teaserclear" style="margin-left:10px;cursor:pointer;color:var(--accent)">Remove</span>`:`<label class="mockfile" style="cursor:pointer">📎 Choose a file (PDF, max 10 MB)<input type="file" id="o_teaser" accept=".pdf" style="display:none"></label>`}</div></div>
