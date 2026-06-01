@@ -302,7 +302,9 @@
 .deal-card .dc-tags{display:flex;flex-wrap:wrap;gap:6px;margin:13px 16px}
 .dc-tag{background:#f0f3f8;color:#4c5b74;border-radius:6px;padding:3px 8px;font-size:11px}
 .deal-card .dc-foot{margin-top:auto;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
-.deal-card .dc-foot .view{color:var(--accent);font-weight:600}
+.deal-card .dc-foot .view{color:var(--accent);font-weight:600;white-space:nowrap;flex-shrink:0}
+.deal-card .dc-foot .dc-meta{white-space:nowrap}
+.dc-tag.teaser{background:var(--accent-soft);color:var(--accent-d)}
 .dc-teaser{display:inline-flex;align-items:center;gap:5px;color:var(--accent-d);font-size:11.5px;font-weight:600}
 .deal-card .dc-mandate{margin-left:auto;font-size:11px;color:var(--muted)}
 .deal-card .dc-desc{margin:11px 16px 0;font-size:13px;color:var(--ink);line-height:1.55}
@@ -563,8 +565,8 @@ const PAGES = {
       <h3>${o.project}</h3>
       <div class="dc-firm">${o.firm}</div>
       <div class="dc-desc">${cap(o.desc,90)}</div>
-      <div class="dc-tags"><span class="dc-tag">${o.sector}</span><span class="dc-tag">${o.region}</span><span class="dc-tag">${o.value}</span></div>
-      <div class="dc-foot"><span class="dc-meta">${o.date}${o.teaser?` · <span class="dc-teaser">📎 Teaser</span>`:''}</span><span class="view">View details ›</span></div>
+      <div class="dc-tags"><span class="dc-tag">${o.sector}</span><span class="dc-tag">${o.region}</span><span class="dc-tag">${o.value}</span>${o.teaser?`<span class="dc-tag teaser">📎 Teaser</span>`:''}</div>
+      <div class="dc-foot"><span class="dc-meta">${o.date}</span><span class="view">View details ›</span></div>
     </div>`;
     wireFilters(OPPS.map((o,i)=>({...o,_i:i})),["type","region","sector"],
       (o,v)=>(!v.q||(o.project+o.firm+(o.desc||"")).toLowerCase().includes(v.q))&&(!v.type||o.type===v.type)&&(!v.region||o.region===v.region)&&(!v.sector||o.sector===v.sector),
