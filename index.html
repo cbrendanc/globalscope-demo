@@ -233,6 +233,27 @@
 .stat .big{font-size:30px;font-weight:300;color:var(--accent)}
 .stat .big.amber{color:var(--amber)}
 .stat .sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+/* quarterly reporting list */
+.qrow{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.qrow:last-of-type{border-bottom:none}
+.qmain{flex:1;min-width:200px}
+.qname{font-weight:600;font-size:14px}
+.qmeta{font-size:12px;color:var(--muted);margin-top:2px}
+.qfacts{display:flex;gap:20px;flex-wrap:wrap}
+.qf{font-size:10.5px;color:var(--muted);text-align:right}
+.qf b{display:block;font-size:13px;color:var(--ink);font-weight:600;margin-top:1px}
+.qf.ev b{font-size:14px}
+.qact{display:flex;align-items:center;gap:10px}
+.qstatus{font-size:10px;font-weight:700;border-radius:20px;padding:3px 10px;white-space:nowrap}
+.qstatus.draft{background:#eef1f6;color:#4c5b74}
+.qstatus.pending{background:var(--amber-soft);color:#8a5a12}
+.qstatus.signed{background:var(--green-soft);color:#1c7a4f}
+.qedit{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--accent-d);cursor:pointer;font-family:inherit}
+.qedit.locked{color:var(--muted);cursor:pointer}
+.qeditor{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:2px 0 8px}
+.qe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.qe-grid label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+.qe-grid input,.qe-grid select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit}
 
 /* filter bar */
 .filterbar{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:18px}
@@ -461,6 +482,14 @@ const OPPS = [
   {project:"Project 26", date:"07 May 2026", firm:"Paramax Corporation", type:"Buy-side", mandate:"Exclusive", value:"€20–€50M", file:"On request", region:"North America", sector:"Consumer",
    desc:"Buy-side: premium food & beverage brands with national distribution.", highlights:["Strategic buyer with clear synergies","€20–50m EV sweet spot","Brand-led businesses preferred"], teaser:null, contact:{name:"Sarah Klein",role:"Managing Director",email:"s.klein@paramax-demo.com"}}
 ];
+const CURR=["AUD","EUR","USD","GBP","CAD","SGD","INR"];
+let MY_TXNS=[
+  {name:"Mayfield acquires SMEC Power & Technology", type:"M&A", date:"01/04/2026", ev:30000000, ccy:"AUD", ebitda:"6.0x", rev:"1.0x", discDeal:"Yes", discEV:"Yes", sector:"Industrials", status:"Awaiting sign-off"},
+  {name:"Sale of Stotthoare Industries", type:"M&A", date:"18/04/2026", ev:12500000, ccy:"AUD", ebitda:"7.2x", rev:"1.3x", discDeal:"Yes", discEV:"No", sector:"Consumer", status:"Awaiting sign-off"},
+  {name:"Helio Renewables growth raise", type:"Capital raise", date:"12/05/2026", ev:25000000, ccy:"EUR", ebitda:"—", rev:"—", discDeal:"Yes", discEV:"Yes", sector:"Energy Transition", status:"Draft"},
+  {name:"Northbridge advisory mandate", type:"Advisory", date:"22/05/2026", ev:90000000, ccy:"USD", ebitda:"—", rev:"—", discDeal:"No", discEV:"No", sector:"Business & Financial Services", status:"Signed off"}
+];
+let qEditing=null;
 const FIRMS = [
   {name:"Octavian Group", loc:"Sydney, Australia", region:"Asia-Pacific", logo:"OCTAVIAN", x:"83%", y:"80%"},
   {name:"Carlsquare GmbH", loc:"Hamburg, Germany", region:"Europe", logo:"CARLSQ.", x:"51%", y:"33%"},
@@ -525,14 +554,23 @@ function wireFilters(items, fields, predicate, render){
 /* ---------- PAGES ---------- */
 const PAGES = {
   dashboard:{ title:"Dashboard", html(){
-    return `<p class="page-intro">Your snapshot of network activity and your firm's reporting status.</p>
+    return `<p class="page-intro">A live snapshot of your firm's reporting and network activity.</p>
     <div class="statgrid">
-      <div class="stat"><div class="lbl">Octavian Group — Transactions YTD</div>
+      <div class="stat"><div class="lbl">Octavian Group · Transactions YTD</div>
         <div class="row"><div><div class="big">47</div><div class="sub">Completed</div></div>
         <div><div class="big">$5.22bn</div><div class="sub">Total value</div></div></div></div>
-      <div class="stat"><div class="lbl">This Quarter</div>
+      <div class="stat"><div class="lbl">Octavian Group · This quarter</div>
         <div class="row"><div><div class="big amber">16</div><div class="sub">Completed</div></div>
         <div><div class="big amber">$606.9m</div><div class="sub">Total value</div></div></div></div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div style="max-width:640px"><h2 style="font-size:16px;margin:0">This quarter's transactions — Octavian Group</h2>
+        <p class="helper" style="margin:4px 0 0">A live list of what your firm has submitted this quarter. Check each entry and correct any mistakes before quarter-end sign-off — once signed off, changes go through the admin team.</p></div>
+        <button class="btn btn-primary" id="esign">Review &amp; e-sign quarter</button>
+      </div>
+      <div id="qlist" style="margin-top:16px"></div>
+      <div id="qmsg" class="helper" style="margin-top:12px"></div>
     </div>
     <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px" class="dash-cols">
       <div class="panel"><h2 style="font-size:16px">Network sector breakdown</h2>
@@ -540,24 +578,10 @@ const PAGES = {
         <div id="bars"></div></div>
       <div class="panel"><h2 style="font-size:16px">Coming up</h2>
         <p class="helper">Your next network events.</p>
-        <div style="border:none;box-shadow:none;padding:0" class="upcoming">${upcomingHtml(3)}</div>
-        <div style="margin-top:10px"><span class="lnk" style="color:var(--accent);cursor:pointer;font-weight:600;font-size:13px" onclick="navTo('events')">View calendar →</span></div>
-      </div>
-    </div>
-    <div class="panel" style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
-      <div><b>Quarterly Transaction Reporting</b><div class="helper" style="margin:4px 0 0">E-sign your quarterly reporting letter before 26 June. (Demo — non-functional.)</div></div>
-      <button class="btn btn-primary">Review &amp; e-sign letter</button>
+        <div class="upcoming" style="border:none;box-shadow:none;padding:0">${upcomingHtml(3)}</div>
+        <div style="margin-top:10px"><span class="lnk" style="color:var(--accent);cursor:pointer;font-weight:600;font-size:13px" onclick="navTo('events')">View calendar →</span></div></div>
     </div>`;
-  }, mount(){
-    const data=[["Industrials",34],["Business & Financial Services",22],["TMT",17],["Consumer",12],["Life Sciences",9],["Energy Transition",6]];
-    const cols=["#16243d","#2f7fb0","#9b6dd6","#c98a2b","#2e9e6b","#5a8db0"];
-    document.getElementById("bars").innerHTML = data.map((d,i)=>`
-      <div style="display:flex;align-items:center;gap:12px;margin:9px 0">
-        <div style="width:190px;font-size:12.5px;color:var(--muted)">${d[0]}</div>
-        <div style="flex:1;background:#eef1f6;border-radius:6px;height:14px;overflow:hidden"><div style="width:${d[1]*2.4}%;height:100%;background:${cols[i]}"></div></div>
-        <div style="width:36px;font-size:12px;text-align:right;font-weight:600">${d[1]}%</div>
-      </div>`).join("");
-  }},
+  }, mount(){ renderBars(); renderQrows(); const e=document.getElementById("esign"); if(e) e.onclick=signoffQuarter; }},
 
   opportunities:{ title:"Opportunities", html(){
     return tabs(["Active Opportunities","My Opportunities","+ Create a New Opportunity"],0,2)
@@ -693,6 +717,53 @@ function upcomingHtml(n){
 }
 
 /* ---------- transaction detail view ---------- */
+function renderBars(){
+  const el=document.getElementById("bars"); if(!el) return;
+  const data=[["Industrials",34],["Business & Financial Services",22],["TMT",17],["Consumer",12],["Life Sciences",9],["Energy Transition",6]];
+  const cols=["#16243d","#2f7fb0","#9b6dd6","#c98a2b","#2e9e6b","#5a8db0"];
+  el.innerHTML=data.map((d,i)=>`<div style="display:flex;align-items:center;gap:12px;margin:9px 0"><div style="width:190px;font-size:12.5px;color:var(--muted)">${d[0]}</div><div style="flex:1;background:#eef1f6;border-radius:6px;height:14px;overflow:hidden"><div style="width:${d[1]*2.4}%;height:100%;background:${cols[i]}"></div></div><div style="width:36px;font-size:12px;text-align:right;font-weight:600">${d[1]}%</div></div>`).join("");
+}
+function qStatusClass(s){ return s==="Draft"?"draft":s==="Signed off"?"signed":"pending"; }
+function qeditorHtml(t,i){
+  return `<div class="qeditor">
+    <div class="qe-grid">
+      <div><label>Enterprise value</label><input type="number" id="qe_ev" value="${t.ev}"></div>
+      <div><label>Currency</label><select id="qe_ccy">${opt(CURR,t.ccy)}</select></div>
+      <div><label>EV / EBITDA</label><input type="text" id="qe_ebitda" value="${t.ebitda}"></div>
+      <div><label>EV / Revenue</label><input type="text" id="qe_rev" value="${t.rev}"></div>
+    </div>
+    <div style="display:flex;gap:10px"><button class="btn btn-primary" id="qe_save">Save correction</button><button class="btn btn-ghost" id="qe_cancel">Cancel</button></div>
+    <p class="helper" style="margin:10px 0 0">Corrections save against the draft and are re-checked at sign-off. After sign-off, changes go through the admin team.</p>
+  </div>`;
+}
+function qrowHtml(t,i){
+  const locked=t.status==="Signed off"; const editing=qEditing===i;
+  return `<div class="qrow"><div class="qmain"><div class="qname">${t.name}</div><div class="qmeta">${t.type} · ${t.date} · ${t.sector}</div></div>
+    <div class="qfacts">
+      <div class="qf ev"><span>Enterprise value</span><b>${t.ccy} ${Number(t.ev).toLocaleString()}</b></div>
+      <div class="qf"><span>EV/EBITDA</span><b>${t.ebitda}</b></div>
+      <div class="qf"><span>EV/Rev</span><b>${t.rev}</b></div>
+      <div class="qf"><span>Disclosed (deal/EV)</span><b>${t.discDeal} / ${t.discEV}</b></div>
+    </div>
+    <div class="qact"><span class="qstatus ${qStatusClass(t.status)}">${t.status}</span>
+      ${locked?`<button class="qedit locked" data-locked="${i}">🔒 Locked</button>`:`<button class="qedit" data-edit="${i}">${editing?'Cancel':'Edit'}</button>`}
+    </div></div>${editing?qeditorHtml(t,i):''}`;
+}
+function qMsg(m){ const el=document.getElementById("qmsg"); if(el){ el.textContent=m; el.style.color="var(--muted)"; } }
+function renderQrows(){
+  const el=document.getElementById("qlist"); if(!el) return;
+  el.innerHTML=MY_TXNS.map((t,i)=>qrowHtml(t,i)).join("");
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{ const i=parseInt(b.dataset.edit); qEditing=(qEditing===i?null:i); renderQrows(); });
+  el.querySelectorAll("[data-locked]").forEach(b=>b.onclick=()=>qMsg("This entry is signed off and locked — contact the admin team to modify it."));
+  const sv=document.getElementById("qe_save");
+  if(sv) sv.onclick=()=>{ const i=qEditing, g=id=>document.getElementById(id);
+    MY_TXNS[i].ev=Number(g("qe_ev").value)||MY_TXNS[i].ev; MY_TXNS[i].ccy=g("qe_ccy").value;
+    MY_TXNS[i].ebitda=g("qe_ebitda").value; MY_TXNS[i].rev=g("qe_rev").value;
+    qEditing=null; renderQrows(); qMsg("✓ Entry updated — your correction is saved and pending sign-off."); };
+  const cn=document.getElementById("qe_cancel"); if(cn) cn.onclick=()=>{ qEditing=null; renderQrows(); };
+}
+function signoffQuarter(){ let n=0; MY_TXNS.forEach(t=>{ if(t.status==="Awaiting sign-off"){ t.status="Signed off"; n++; } });
+  qEditing=null; renderQrows(); qMsg(n?`Quarter signed off — ${n} entr${n===1?'y is':'ies are'} now locked. Drafts stay editable until submitted.`:"Nothing was awaiting sign-off."); }
 function showTxn(i){
   const t=TXNS[i]; const page=document.getElementById("page"); const dl=dealLine(t);
   document.getElementById("pageTitle").textContent="Transaction";
