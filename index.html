@@ -1036,17 +1036,14 @@ window.addEventListener("hashchange", route);
 /* ===== WIZARD_JS (injected module: window.GSWizard) ===== */
 window.GSWizard=(function(){
 let content; let EXIT=null;
-function open(mountEl,onExit){ content=mountEl; EXIT=onExit; state={ type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } }; render(); }
+function open(mountEl,onExit){ content=mountEl; EXIT=onExit; state={ step:0, data:{ evCurrency:"AUD", amountRaisedCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", disclosedExternally:true, evDisclosedExternally:true, collaborate:false, sector:[], subSector:[], tagged:["You"] } }; render(); }
 
 
 /* ============================================================
-   GLOBALSCOPE · TRANSACTION REPORTING — REDESIGN PROTOTYPE
-   Config-driven dynamic form. The schema below IS the proposal:
-   each transaction type defines its own steps & fields, and
-   fields can appear/disappear based on earlier answers.
+   GLOBALSCOPE · Submit a New Transaction
+   Faithful re-skin of the original client-centric form,
+   with board-mandated additions folded in.
    ============================================================ */
-
-/* Six top-level sectors aligned to the Globalscope league-table taxonomy (from the live Dashboard) */
 const SECTOR_TREE = {
   "Business & Financial Services":["Banking","Insurance","Asset & Wealth Management","Fintech","Payments","Professional Services","Specialty Finance"],
   "Consumer":["Food & Beverage","Apparel & Luxury","Consumer Products","Retail & E-commerce","Leisure & Hospitality","Agriculture & Food"],
@@ -1056,9 +1053,7 @@ const SECTOR_TREE = {
   "TMT":["Software / SaaS","IT Services","Telecom","Media & Entertainment","Semiconductors","Hardware & Devices","Gaming"]
 };
 const SECTORS = Object.keys(SECTOR_TREE);
-function subsForSelected(sel){ const out=[]; (sel||[]).forEach(x=>{ (SECTOR_TREE[x]||[]).forEach(y=>{ if(!out.includes(y)) out.push(y); }); }); return out; }
-const SUBSECTORS = subsForSelected(SECTORS);
-
+function subsForSelected(sel){ const out=[]; (sel||[]).forEach(x=>{(SECTOR_TREE[x]||[]).forEach(y=>{ if(!out.includes(y)) out.push(y); });}); return out; }
 const REGION_COUNTRIES = {
   "North America":["United States","Canada","Mexico"],
   "Latin America & Caribbean":["Argentina","Bahamas","Bolivia","Brazil","Chile","Colombia","Costa Rica","Dominican Republic","Ecuador","El Salvador","Guatemala","Honduras","Jamaica","Nicaragua","Panama","Paraguay","Peru","Puerto Rico","Trinidad and Tobago","Uruguay","Venezuela"],
@@ -1068,870 +1063,242 @@ const REGION_COUNTRIES = {
   "South Asia":["Afghanistan","Bangladesh","Bhutan","India","Maldives","Nepal","Pakistan","Sri Lanka"],
   "Asia-Pacific":["Australia","Brunei","Cambodia","China","Fiji","Hong Kong","Indonesia","Japan","Laos","Malaysia","Mongolia","Myanmar","New Zealand","Papua New Guinea","Philippines","Singapore","South Korea","Taiwan","Thailand","Vietnam"]
 };
-const COUNTRIES = {}; Object.keys(REGION_COUNTRIES).forEach(r=>REGION_COUNTRIES[r].forEach(c=>COUNTRIES[c]=r));
-const COUNTRY_LIST = Object.keys(COUNTRIES).sort();
-const REGIONS = ["Africa","Asia-Pacific","Europe","Latin America & Caribbean",
-  "Middle East","North America","South Asia"];
-const CURRENCIES = ["USD","EUR","GBP","AUD","CAD","JPY","INR","SGD"];
+const COUNTRIES={}; Object.keys(REGION_COUNTRIES).forEach(r=>REGION_COUNTRIES[r].forEach(c=>COUNTRIES[c]=r));
+const COUNTRY_LIST=Object.keys(COUNTRIES).sort();
+const REGIONS=["Africa","Asia-Pacific","Europe","Latin America & Caribbean","Middle East","North America","South Asia"];
+const CURR=["AUD","EUR","USD","GBP","CAD","JPY","INR","SGD"];
+const TYPES=["M&A","Capital Raise","Other Advisory Services"];
+const TOMB=["Acquired","Sold to","Merged with","Has acquired","Divested","Raised capital","Secured investment from","Advised on"];
+const MEMBERS=["You (Brendan Cockram)","Add a colleague…"];
 
-/* ---- Field helper text (explainers on EVERYTHING) ---- */
+const STEPS=[
+  { key:"details", title:"Transaction details",
+    lead:"Tell us about your client and the deal. This mirrors the form you know — just tidier.",
+    fields:[
+      { id:"transactionName", label:"Transaction Name", req:true, type:"text", placeholder:"e.g. Mayfield acquires SMEC Power & Technology", helper:"The headline for this deal." },
+      { id:"clientName", label:"Client Name", req:true, type:"text", placeholder:"Your client", helper:"The company you advised." },
+      { id:"assetName", label:"Transaction Asset Name", type:"text", placeholder:"If different from the client", helper:"Only if the asset differs from your client." },
+      { id:"clientWebsite", label:"Client Website", type:"url", placeholder:"https://…" },
+      { id:"clientHQ", label:"Client HQ", req:true, type:"country" },
+      { id:"clientLogo", label:"Client Logo", req:true, type:"file", helper:"Appears on the tombstone. Max 2 MB." },
+      { id:"businessDescription", label:"Business Description", type:"textarea", placeholder:"A short description of your client's business…", helper:"Improves your visibility in member search." },
+      { id:"transactionType", label:"Transaction Type", req:true, type:"select", source:TYPES, helper:"Drives the financial details we ask for next." },
+      { id:"mnaType", label:"Type of transaction", req:true, type:"select", source:["Buy-side","Sell-side","Fairness opinion"], helper:"Which side did you advise?", showIf:{f:"transactionType",eq:"M&A"} },
+      { id:"collaborate", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle", helper:"Cross-border collaboration is a core Globalscope story." },
+      { id:"collaborateMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…", showIf:{f:"collaborate",eq:true} },
+      { id:"transactionDescription", label:"Transaction Description", req:true, type:"textarea", placeholder:"A robust description of the transaction…", helper:"Makes you more discoverable to other members." },
+      { id:"tombstoneText", label:"Tombstone Text", req:true, type:"select", source:TOMB, helper:"The wording shown on the tombstone." },
+      { id:"pressReleaseURL", label:"Press Release URL", type:"url", placeholder:"https://…" },
+      { id:"sector", label:"Sector", req:true, type:"comboMulti", helper:"Aligns to the league-table taxonomy." },
+      { id:"subSector", label:"Sub-Sector", type:"comboMulti", helper:"Optional — sharpens search." },
+      { id:"closingDate", label:"Transaction Closing Date", req:true, type:"date", helper:"Only closed transactions are recorded." },
+      { id:"country", label:"Country", req:true, type:"country", helper:"Where the transaction closed — usually the target's location." },
+      { id:"region", label:"Region", req:true, type:"select", source:REGIONS, helper:"Auto-filled from the country." }
+    ]},
+  { key:"financials", title:"Financial details", info:"ev",
+    lead:"Numbers power Globalscope's league tables. Report in full notation and disclose externally only what you're permitted to.",
+    fields:[
+      { id:"disclosedExternally", label:"Transaction Disclosed Externally", req:true, type:"toggle", helper:"Yes = visible on the MApp and the public website. No = internal to the MApp only." },
+      { id:"evDisclosedExternally", label:"Enterprise Value Disclosed Externally", req:true, type:"toggle", helper:"Always used internally; shown publicly only if the value is in your description." },
+      { id:"enterpriseValue", label:"Enterprise Value", req:true, type:"amount", curId:"evCurrency", helper:"Full notation (e.g. 30,000,000). Enter 0 if confidential.", showIf:{f:"transactionType",eq:"M&A"} },
+      { id:"evEbitda", label:"Enterprise Value / EBITDA", req:true, type:"number", placeholder:"e.g. 8.5", showIf:{f:"transactionType",eq:"M&A"} },
+      { id:"evRevenue", label:"Enterprise Value / Revenue", req:true, type:"number", placeholder:"e.g. 1.2", showIf:{f:"transactionType",eq:"M&A"} },
+      { id:"amountRaised", label:"Amount Raised", req:true, type:"amount", curId:"amountRaisedCcy", helper:"Full notation (e.g. 50,000,000).", showIf:{f:"transactionType",eq:"Capital Raise"} },
+      { id:"natureOfCapital", label:"Nature of Capital", req:true, type:"select", source:["Equity","Debt","Hybrid / structured"], showIf:{f:"transactionType",eq:"Capital Raise"} },
+      { id:"postMoneyEquity", label:"Post-money Equity Valuation", type:"amount", curId:"postEqCcy", showIf:{f:"transactionType",eq:"Capital Raise"} },
+      { id:"postMoneyEV", label:"Post-money Enterprise Value", type:"amount", curId:"postEVCcy", showIf:{f:"transactionType",eq:"Capital Raise"} },
+      { id:"natureOfAdvisory", label:"Nature of Advisory Assignment", req:true, type:"select", source:["Valuation","Strategic advisory","Consulting","Due diligence","Restructuring","Other"], showIf:{f:"transactionType",eq:"Other Advisory Services"} },
+      { id:"relevantSize", label:"Relevant Transaction / Valuation Size", type:"amount", curId:"sizeCcy", helper:"Where appropriate. Leave blank if not relevant.", showIf:{f:"transactionType",eq:"Other Advisory Services"} }
+    ]}
+];
+const STEP_NAMES=["Details","Financials","Review"];
 
-const SCHEMA = {
-  mna: {
-    label:"M&A",
-    verb:"Acquired",
-    steps:[
-      {
-        key:"parties", title:"Who was involved & which side were you on?",
-        lead:"Start with the simple part: the two companies in the deal, and which one you advised. We'll use this to label everything else for you.",
-        fields:[
-          { id:"advised", label:"Which side did you advise?", req:true, type:"choices",
-            helper:"This drives the rest of the form. Pick one.",
-            options:[
-              {v:"sell",   t:"Sell-side",        d:"We advised the company being sold (the target / seller)."},
-              {v:"buy",    t:"Buy-side",         d:"We advised the company doing the buying (the acquirer)."},
-              {v:"fair",   t:"Fairness opinion", d:"We provided an independent fairness opinion on the deal."}
-            ]},
-          { id:"_partyBlock", type:"parties" },
-          { id:"closeDate", label:"Completion / announcement date", req:true, type:"date",
-            helper:"When the deal closed, or was announced if not yet closed." }
-        ]
-      },
-      {
-        key:"about", title:"About the deal",
-        lead:"Classification so other members can find this deal when searching for expertise.",
-        fields:[
-          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
-            helper:"The industry of the target. Choose all that apply." },
-          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
-            helper:"Optional — sharpens search and league tables." },
-          { id:"country", label:"Country of the target", req:true, type:"text", placeholder:"e.g. Australia",
-            helper:"Where the target is based." },
-          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
-            helper:"Auto-suggested from the country." },
-          { id:"desc", label:"Deal description", req:true, type:"textarea",
-            placeholder:"e.g. Mayfield Group Holdings acquired SMEC Power & Technology, an Australian electrical engineering company serving the mining, industrial and resources sectors.",
-            helper:"Two or three sentences: who, what, why it matters. Appears publicly and in member search." },
-          { id:"prurl", label:"Press release / announcement URL", type:"url", placeholder:"https://…",
-            helper:"Optional. A public link adds credibility and lets us verify the deal." }
-        ]
-      },
-      {
-        key:"financials", title:"Financial details",
-        lead:"Numbers power our league tables. Report in full notation; disclose externally only what you're permitted to.",
-        info:"ev",
-        fields:[
-          { id:"discDeal", label:"Show this transaction externally?", req:true, type:"toggle",
-            helper:"Yes = appears on the MApp and public website. No = internal only." },
-          { id:"ev", label:"Enterprise Value of the target", req:true, type:"amount",
-            helper:"Required — full notation (e.g. 30,000,000). Enter 0 if confidential.", curId:"evCcy" },
-          { id:"discEV", label:"Show the Enterprise Value externally?", req:true, type:"toggle",
-            helper:"Always used internally. Yes also publishes it, if included in your description." },
-          { id:"evEbitda", label:"EV / EBITDA multiple", type:"number", placeholder:"e.g. 8.5",
-            helper:"EV ÷ EBITDA. Leave blank if N/A or confidential." },
-          { id:"evRev", label:"EV / Revenue multiple", type:"number", placeholder:"e.g. 1.2",
-            helper:"EV ÷ Revenue. Leave blank if N/A or confidential." }
-        ]
-      },
-      {
-        key:"recognition", title:"Recognition & tombstone",
-        lead:"Give credit and check how the deal will appear.",
-        fields:[
-          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
-            helper:"Tell us if a fellow member firm worked alongside you." },
-          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
-            helper:"The firm(s) you partnered with.", showIf:{f:"collab",eq:true} },
-          { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
-            source:["You","Add a colleague…"],
-            helper:"Tagged members get the deal on their track record." },
-          { id:"verb", label:"Tombstone wording", type:"text",
-            helper:"Auto-suggested. Edit if you'd word it differently." }
-        ]
-      }
-    ]
-  },
-
-  capital: {
-    label:"Capital Raise",
-    verb:"Raised capital",
-    steps:[
-      {
-        key:"parties", title:"The company & your role",
-        lead:"One company raising funding. Tell us who, and what kind of capital.",
-        fields:[
-          { id:"natureCap", label:"What type of capital was raised?", req:true, type:"choices",
-            helper:"This drives which financial figures we ask for next.",
-            options:[
-              {v:"equity", t:"Equity",  d:"Shares issued — incl. private equity, venture capital, growth equity."},
-              {v:"debt",   t:"Debt",    d:"Borrowing — senior, mezzanine, private credit, bonds."},
-              {v:"hybrid", t:"Hybrid / structured", d:"Convertibles, preferred, or a mixed structure."}
-            ]},
-          { id:"_partyBlockCap", type:"partiesCap" },
-          { id:"closeDate", label:"Completion / announcement date", req:true, type:"date",
-            helper:"When the raise completed or was announced." }
-        ]
-      },
-      {
-        key:"about", title:"About the company",
-        lead:"Classification so the raise is discoverable and counts in league tables.",
-        fields:[
-          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
-            helper:"The industry of the company that raised capital." },
-          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
-            helper:"Optional — sharpens search and rankings." },
-          { id:"country", label:"Country of the company", req:true, type:"text", placeholder:"e.g. Netherlands",
-            helper:"Where the company is headquartered." },
-          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
-            helper:"Auto-suggested from the country." },
-          { id:"desc", label:"Deal description", req:true, type:"textarea",
-            placeholder:"e.g. Advised a Series C equity raise for a Dutch logistics-tech company to fund European expansion.",
-            helper:"Two or three sentences: who raised, what for, your role." },
-          { id:"prurl", label:"Press release / announcement URL", type:"url", placeholder:"https://…",
-            helper:"Optional public link for verification and credibility." }
-        ]
-      },
-      {
-        key:"financials", title:"Financial details",
-        lead:"Full notation. We only ask for metrics that fit the capital type you chose.",
-        fields:[
-          { id:"discDeal", label:"Show this transaction externally?", req:true, type:"toggle",
-            helper:"Yes = appears on the MApp and website. No = internal only." },
-          { id:"amount", label:"Amount raised", req:true, type:"amount",
-            helper:"Total capital raised, in full notation (e.g. 50,000,000).", curId:"amtCcy" },
-          { id:"postEq", label:"Post-money equity valuation", type:"amount",
-            helper:"Equity value right after the raise.",
-            curId:"postEqCcy", showIf:{f:"natureCap",in:["equity","hybrid"]} },
-          { id:"postEV", label:"Post-money Enterprise Value", type:"amount",
-            helper:"Enterprise Value right after the raise, where known.",
-            curId:"postEVCcy" },
-          { id:"discEV", label:"Show the financial figures externally?", req:true, type:"toggle",
-            helper:"Always used internally. Yes also publishes, if included in your description." }
-        ]
-      },
-      {
-        key:"recognition", title:"Recognition & tombstone",
-        lead:"Credit the team and confirm how the raise appears.",
-        fields:[
-          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
-            helper:"Tell us if a fellow member firm worked alongside you." },
-          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
-            helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
-          { id:"tagged", label:"Tag the people who worked on this transaction", type:"chips",
-            source:["You","Add a colleague…"],
-            helper:"Tagged members get the deal on their track record." },
-          { id:"verb", label:"Tombstone wording", type:"text",
-            helper:"Auto-suggested. Edit freely." }
-        ]
-      }
-    ]
-  },
-
-  advisory: {
-    label:"Other Advisory",
-    verb:"Advised on",
-    steps:[
-      {
-        key:"parties", title:"The engagement & your role",
-        lead:"Advisory work where you weren't the principal deal advisor — valuations, consulting, strategic advisory. (Fairness opinions go under M&A.)",
-        fields:[
-          { id:"natureAdv", label:"Nature of the advisory assignment", req:true, type:"select",
-            source:["Valuation","Strategic advisory","Management consulting","Debt advisory","Restructuring","Due diligence","Other"],
-            helper:"Pick the closest fit." },
-          { id:"natureOther", label:"Briefly describe the assignment type", type:"text",
-            placeholder:"Describe the advisory work…",
-            helper:"In a few words, what it involved.", showIf:{f:"natureAdv",eq:"Other"} },
-          { id:"_partyBlockAdv", type:"partiesAdv" },
-          { id:"closeDate", label:"Completion date", req:true, type:"date",
-            helper:"When the engagement was completed." }
-        ]
-      },
-      {
-        key:"about", title:"About the client",
-        lead:"Classification so the engagement is discoverable.",
-        fields:[
-          { id:"sectors", label:"Sector(s)", req:true, type:"chips", source:SECTORS,
-            helper:"The industry of the client." },
-          { id:"subsectors", label:"Sub-sector(s)", type:"chips", source:SUBSECTORS,
-            helper:"Optional — sharpens search results." },
-          { id:"country", label:"Country of the client", req:true, type:"text", placeholder:"e.g. Singapore",
-            helper:"Where the client is based." },
-          { id:"region", label:"Region", req:true, type:"select", source:REGIONS,
-            helper:"Auto-suggested from the country." },
-          { id:"desc", label:"Engagement description", req:true, type:"textarea",
-            placeholder:"e.g. Provided an independent valuation of a manufacturing business to support shareholder decision-making.",
-            helper:"Two or three sentences on the work and value added." },
-          { id:"prurl", label:"Public link (if any)", type:"url", placeholder:"https://…",
-            helper:"Optional — only if the engagement was publicly referenced." }
-        ]
-      },
-      {
-        key:"financials", title:"Engagement size",
-        lead:"Lighter here. Add a size only where appropriate and permitted.",
-        fields:[
-          { id:"discDeal", label:"Show this engagement externally?", req:true, type:"toggle",
-            helper:"Yes = appears on the MApp/website. No = internal only." },
-          { id:"size", label:"Relevant transaction or valuation size", type:"amount",
-            helper:"Where appropriate — e.g. the valuation or underlying deal size. Leave blank if N/A.",
-            curId:"sizeCcy" },
-          { id:"discEV", label:"Show the size externally?", req:true, type:"toggle",
-            helper:"Always used internally. Yes also publishes it, if included in your description." }
-        ]
-      },
-      {
-        key:"recognition", title:"Recognition",
-        lead:"Credit the team. A directory entry builds your track record.",
-        fields:[
-          { id:"collab", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle",
-            helper:"Tell us if a fellow member firm worked alongside you." },
-          { id:"collabMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…",
-            helper:"The partner firm(s) on this mandate.", showIf:{f:"collab",eq:true} },
-          { id:"tagged", label:"Tag the people who worked on this engagement", type:"chips",
-            source:["You","Add a colleague…"],
-            helper:"Tagged members get the engagement on their track record." }
-        ]
-      }
-    ]
-  }
-};
-
-const STEP_NAMES = ["Type","Parties & role","Details","Financials","Recognition","Review"];
-
-/* ---------------- state ---------------- */
-let state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
-             discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } };
+let state = { step:0, data:{ evCurrency:"AUD", amountRaisedCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", disclosedExternally:true, evDisclosedExternally:true, collaborate:false, sector:[], subSector:[], tagged:["You (Brendan Cockram)"] } };
 
 const $ = sel => document.querySelector(sel);
 /* content via open() */
 
-/* ---------------- render entry ---------------- */
 function render(){
-  if(state.type===null){ renderTypeSelect(); return; }
   if(state.step===99){ renderConfirm(); return; }
-  const steps = SCHEMA[state.type].steps;
-  if(state.step>=steps.length){ renderReview(); return; }
-  renderStep(steps[state.step]);
+  if(state.step>=STEPS.length){ renderReview(); return; }
+  renderStep(STEPS[state.step]);
   window.scrollTo({top:0,behavior:"smooth"});
 }
-
-/* ---------------- step indicator ---------------- */
 function stepper(active){
-  // active: index in STEP_NAMES (0 type,1..4 steps,5 review)
   let h='<div class="stepper">';
-  STEP_NAMES.forEach((n,i)=>{
-    let cls = i<active?"done":(i===active?"current":"");
-    let inner = i<active?"✓":(i+1);
-    h+=`<div class="step ${cls}"><div class="dot">${inner}</div><span>${n}</span></div>`;
-    if(i<STEP_NAMES.length-1) h+=`<div class="bar ${i<active?'done':''}"></div>`;
-  });
+  STEP_NAMES.forEach((n,i)=>{ const cls=i<active?"done":(i===active?"current":""); h+=`<div class="step ${cls}"><div class="dot">${i<active?'✓':i+1}</div><span>${n}</span></div>`; if(i<STEP_NAMES.length-1) h+=`<div class="bar ${i<active?'done':''}"></div>`; });
   return h+'</div>';
 }
-
-/* ---------------- TYPE SELECTION ---------------- */
-function renderTypeSelect(){
-  content.innerHTML = stepper(0) + `
-  <div class="banner">
-    <span>✦</span>
-    <div><b>Why we ask.</b> Reporting feeds our marketing, member search and league tables. Cleaner data means a stronger profile for every member.</div>
-  </div>
-  <div class="panel">
-    <h2>What kind of transaction are you reporting?</h2>
-    <p class="lead">Pick one. The form then asks <b>only</b> the questions that matter for that type.</p>
-    <div class="landing-meta">
-      <span>⏱ About 3 minutes</span>
-      <span>💾 Save and finish later, anytime</span>
-      <span>❓ Every field explained as you go</span>
-    </div>
-    <div class="typegrid">
-      <div class="typecard" data-t="mna">
-        <div class="ti">🤝</div>
-        <h3>M&amp;A</h3>
-        <p>A business was bought or sold — an acquisition, sale, merger or divestiture.</p>
-        <div class="ex">Most deals are M&amp;A. We'll need the buyer, the target, and your side.</div>
-      </div>
-      <div class="typecard" data-t="capital">
-        <div class="ti">💲</div>
-        <h3>Capital Raise</h3>
-        <p>A company raised funding — equity, debt or structured / hybrid capital.</p>
-        <div class="ex">We'll ask the amount and valuation, tuned to the capital type.</div>
-      </div>
-      <div class="typecard" data-t="advisory">
-        <div class="ti">📋</div>
-        <h3>Other Advisory</h3>
-        <p>Valuations, consulting and strategic advisory where you weren't the principal deal advisor.</p>
-        <div class="ex">Lighter on financials. Fairness opinions go under M&amp;A.</div>
-      </div>
-    </div>
-  </div>`;
-  document.querySelectorAll(".typecard").forEach(c=>{
-    c.onclick=()=>{
-      document.querySelectorAll(".typecard").forEach(x=>x.classList.remove("sel"));
-      c.classList.add("sel");
-      const t=c.dataset.t;
-      setTimeout(()=>{ state.type=t; state.step=0; render(); },180);
-    };
-  });
-}
-
-/* ---------------- A STEP ---------------- */
 function renderStep(step){
-  const sIdx = state.step; // 0..3 maps to STEP_NAMES 1..4
-  let body = `<div class="panel"><h2>${step.title}</h2><p class="lead">${step.lead}</p>`;
-  if(step.info==="ev"){
-    body += `<div class="infobox"><span class="ii">ℹ︎</span><div><b>How we define Enterprise Value (EV).</b><br>
+  let body=`<div class="panel"><h2>${step.title}</h2><p class="lead">${step.lead}</p>`;
+  if(step.info==="ev" && state.data.transactionType==="M&A"){
+    body+=`<div class="infobox"><span class="ii">ℹ︎</span><div><b>How we define Enterprise Value (EV).</b><br>
       <code>EV = Market Cap (or Equity Value) + Total Debt + Preferred Equity + Minority Interest − Cash &amp; Cash Equivalents</code><br>
-      Using one definition across the network keeps our league tables and multiples comparable.</div></div>`;
+      One definition across the network keeps league tables and multiples comparable.</div></div>`;
   }
-  step.fields.forEach(f=> body += renderField(f) );
-  body += `</div>`;
-
-  // layout: show tombstone preview alongside for steps after type select
-  const showPreview = (state.type==="mna" || state.type==="capital");
-  let html = stepper(sIdx+1);
-  if(showPreview){
-    html += `<div class="layout"><div>${body}${nav()}</div><div class="preview-wrap">${previewPanel()}</div></div>`;
-  } else {
-    html += body + nav();
-  }
-  content.innerHTML = html;
-  bindFields(step);
-  bindNav();
-  updatePreview();
+  step.fields.forEach(f=> body+=renderField(f));
+  body+=`</div>`;
+  content.innerHTML = stepper(state.step) + `<div class="layout"><div>${body}${nav()}</div><div class="preview-wrap">${previewPanel()}</div></div>`;
+  bindFields(step); bindNav(); initCombos(step); updatePreview();
 }
 
-/* ---------------- FIELD RENDERERS ---------------- */
+/* ---------- field renderers ---------- */
+function evalShow(c){ const v=state.data[c.f]; if("eq" in c) return v===c.eq; if("in" in c) return c.in.includes(v); return true; }
 function renderField(f){
-  // special composite party blocks
-  if(f.type==="parties")    return partyBlock();
-  if(f.type==="partiesCap") return partyBlockCap();
-  if(f.type==="partiesAdv") return partyBlockAdv();
-  if(f.id==="country")    return countryField(f);
-  if(f.id==="sectors")    return multiComboField(f,"sectors");
-  if(f.id==="subsectors") return multiComboField(f,"subsectors");
-
+  if(f.type==="comboMulti") return multiComboField(f);
   const hidden = f.showIf && !evalShow(f.showIf) ? " hidden" : "";
   const req = f.req?'<span class="req">*</span>':'';
-  let inner="";
   const v = state.data[f.id];
-
+  let inner="";
   switch(f.type){
-    case "choices":
-      inner = `<div class="choices ${f.id==='discDeal'?'yn':''}">` + f.options.map(o=>
-        `<div class="choice ${v===o.v?'sel':''}" data-f="${f.id}" data-v="${o.v}">
-           <div class="ch-t">${o.t}</div><div class="ch-d">${o.d}</div></div>`).join("") + `</div>`;
-      break;
-    case "toggle":
-      inner = `<div class="toggle" data-f="${f.id}">
-        <button data-v="true" class="${v===true?'on':''}">Yes</button>
-        <button data-v="false" class="${v===false?'on':''}">No</button></div>`;
-      if(f.id==="discDeal"||f.id==="discEV") inner += `<div data-badge="${f.id}"></div>`;
-      break;
-    case "chips":
-      inner = `<div class="chips" data-f="${f.id}">` + f.source.map(s=>
-        `<div class="chip ${(v||[]).includes(s)?'sel':''}" data-v="${s}">${s}</div>`).join("") + `</div>`;
-      break;
-    case "select":
-      inner = `<select data-f="${f.id}"><option value="">Select…</option>` +
-        f.source.map(s=>`<option ${v===s?'selected':''}>${s}</option>`).join("") + `</select>`;
-      break;
-    case "textarea":
-      inner = `<textarea data-f="${f.id}" placeholder="${f.placeholder||''}">${v||''}</textarea>`;
-      break;
-    case "date":
-      inner = `<input type="date" data-f="${f.id}" value="${v||''}">`;
-      break;
-    case "number":
-      inner = `<input type="number" step="any" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v??''}">`;
-      break;
-    case "amount":
-      inner = `<div class="row-amt"><input type="number" step="any" data-f="${f.id}" placeholder="Full notation, e.g. 30000000" value="${v??''}">
-        <select data-f="${f.curId}">${CURRENCIES.map(c=>`<option ${state.data[f.curId]===c?'selected':''}>${c}</option>`).join("")}</select></div>`;
-      break;
-    case "url":
-      inner = `<input type="url" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`;
-      break;
-    default:
-      inner = `<input type="text" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`;
+    case "textarea": inner=`<textarea data-f="${f.id}" placeholder="${f.placeholder||''}">${v||''}</textarea>`; break;
+    case "select": inner=`<select data-f="${f.id}"><option value="">Select…</option>${f.source.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join("")}</select>`; break;
+    case "country": inner=`<select data-f="${f.id}"><option value="">Select country…</option>${COUNTRY_LIST.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join("")}</select>`; break;
+    case "date": inner=`<input type="date" data-f="${f.id}" value="${v||''}">`; break;
+    case "number": inner=`<input type="number" step="any" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v??''}">`; break;
+    case "amount": inner=`<div class="row-amt"><input type="number" step="any" data-f="${f.id}" placeholder="Full notation, e.g. 30000000" value="${v??''}"><select data-f="${f.curId}">${CURR.map(c=>`<option ${state.data[f.curId]===c?'selected':''}>${c}</option>`).join("")}</select></div>`; break;
+    case "url": inner=`<input type="url" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`; break;
+    case "toggle": inner=`<div class="toggle" data-f="${f.id}"><button data-v="true" class="${v===true?'on':''}">Yes</button><button data-v="false" class="${v===false?'on':''}">No</button></div>`; break;
+    case "file": inner=`<span class="mockfile" data-file="${f.id}">${state.data[f.id]?'📎 '+state.data[f.id]:'📎 Choose file — '+(f.helper||'max 2 MB')}</span>`; break;
+    default: inner=`<input type="text" data-f="${f.id}" placeholder="${f.placeholder||''}" value="${v||''}">`;
   }
-  return `<div class="field${hidden}" data-field="${f.id}">
-      <label>${f.label}${req}</label>
-      ${f.helper?`<p class="helper">${f.helper}</p>`:''}
-      ${inner}
-    </div>`;
+  const help = (f.helper && f.type!=="file") ? `<p class="helper">${f.helper}</p>` : "";
+  return `<div class="field${hidden}" data-field="${f.id}"><label>${f.label}${req}</label>${help}${inner}</div>`;
 }
 
-/* party blocks – the heart of the M&A simplification */
-function partyBlock(){
-  const advised = state.data.advised;
-  const buyClient  = advised==="buy";
-  const sellClient = advised==="sell";
-  const tag = '<span class="role-tag">Your client</span>';
-  const hq = (id)=>`<select data-f="${id}"><option value="">HQ country…</option>${COUNTRY_LIST.map(c=>`<option ${state.data[id]===c?'selected':''}>${c}</option>`).join('')}</select>`;
-  return `
-  <div class="field" data-field="_partyBlock">
-    <label>The two companies in the deal</label>
-    <p class="helper">Who's buying, who's being bought. We highlight your client based on the side you advised.</p>
-    <div class="party ${buyClient?'client':''}" data-party="buyer">
-      <h4>Buyer ${buyClient?tag:''}</h4>
-      <p class="ph">The company doing the acquiring.</p>
-      <div class="row2">
-        <input type="text" data-f="buyerName" placeholder="Buyer company name" value="${state.data.buyerName||''}">
-        ${hq('buyerHQ')}
-      </div>
-      <div style="margin-top:10px"><span class="mockfile">📎 Upload buyer logo (shown on the tombstone, max 2 MB)</span></div>
-    </div>
-    <div class="party ${sellClient?'client':''}" data-party="target">
-      <h4>Target <span class="req">*</span> ${sellClient?tag:''}</h4>
-      <p class="ph">The business acquired or sold — this name appears on the tombstone.</p>
-      <div class="row2">
-        <input type="text" data-f="targetName" placeholder="Target company name" value="${state.data.targetName||''}">
-        ${hq('targetHQ')}
-      </div>
-      <div style="margin-top:10px"><span class="mockfile">📎 Upload target logo (shown on the tombstone, max 2 MB)</span></div>
-    </div>
-    ${advised==="fair"?`<p class="helper" style="margin-top:4px"><b>Fairness opinion</b> — fill in both parties; we'll note your independent role.</p>`:''}
-  </div>`;
-}
-function partyBlockCap(){
-  return `
-  <div class="field" data-field="_partyBlockCap">
-    <label>The company that raised capital</label>
-    <p class="helper">The issuer / borrower you advised.</p>
-    <div class="party client">
-      <h4>Company raising capital <span class="role-tag">Your client</span></h4>
-      <div class="row2">
-        <input type="text" data-f="companyName" placeholder="Company name" value="${state.data.companyName||''}">
-        <input type="text" data-f="companyHQ" placeholder="Company HQ (country)" value="${state.data.companyHQ||''}">
-      </div>
-      <div style="margin-top:10px"><span class="mockfile">📎 Upload company logo (max 2 MB)</span></div>
-    </div>
-    <div class="field" data-field="investor" style="margin-bottom:0">
-      <label>Lead investor / provider <span class="helper" style="display:inline">(optional)</span></label>
-      <p class="helper">Name the lead fund or lender, if public.</p>
-      <input type="text" data-f="investorName" placeholder="e.g. Acme Growth Partners" value="${state.data.investorName||''}">
-    </div>
-  </div>`;
-}
-function partyBlockAdv(){
-  return `
-  <div class="field" data-field="_partyBlockAdv">
-    <label>Your client</label>
-    <p class="helper">The party you advised on this engagement.</p>
-    <div class="party client">
-      <h4>Client <span class="role-tag">Your client</span></h4>
-      <div class="row2">
-        <input type="text" data-f="clientName" placeholder="Client name" value="${state.data.clientName||''}">
-        <input type="text" data-f="clientHQ" placeholder="Client HQ (country)" value="${state.data.clientHQ||''}">
-      </div>
-    </div>
-  </div>`;
-}
-
-
-/* ---- searchable dropdowns: no typos, sub-sectors filtered by sector ---- */
-function comboOptions(key){
-  if(key==="countries")  return COUNTRY_LIST;
-  if(key==="sectors")    return SECTORS;
-  if(key==="subsectors") return subsForSelected(state.data.sectors||[]);
-  return [];
-}
+/* ---------- searchable multi (sector / sub-sector / tagged) ---------- */
+function comboOptions(key){ if(key==="sector") return SECTORS; if(key==="subSector") return subsForSelected(state.data.sector||[]); if(key==="tagged") return MEMBERS; return []; }
 function esc(v){ return (v+"").replace(/&/g,"&amp;").replace(/"/g,"&quot;"); }
-function countryField(f){
-  const v=state.data.country||"";
+function multiComboField(f){
   const req=f.req?'<span class="req">*</span>':'';
-  return `<div class="field" data-field="country">
-    <label>${f.label}${req}</label>
-    ${f.helper?`<p class="helper">${f.helper} Start typing to search the list.</p>`:''}
-    <div class="combo" data-combo="countries" data-mode="single">
-      <input type="text" class="combo-input" data-f="country" placeholder="Type to search countries…" value="${esc(v)}" autocomplete="off">
-      <span class="combo-caret">▾</span>
-      <div class="combo-menu hidden"></div>
-    </div>
-  </div>`;
+  const ph = f.id==="subSector"?"Search and add sub-sectors…":(f.id==="tagged"?"Search and add members…":"Search and add sectors…");
+  return `<div class="field" data-field="${f.id}"><label>${f.label}${req}</label>${f.helper?`<p class="helper">${f.helper}</p>`:''}
+    <div class="combo" data-combo="${f.id}"><div class="combo-box"><span class="combo-chips"></span><input type="text" class="combo-input" placeholder="${ph}" autocomplete="off"></div><div class="combo-menu hidden"></div></div></div>`;
 }
-function multiComboField(f,key){
-  const req=f.req?'<span class="req">*</span>':'';
-  const ph = key==="subsectors" ? "Search and add sub-sectors…" : "Search and add sectors…";
-  return `<div class="field" data-field="${key}">
-    <label>${f.label}${req}</label>
-    ${f.helper?`<p class="helper">${f.helper}</p>`:''}
-    <div class="combo" data-combo="${key}" data-mode="multi">
-      <div class="combo-box"><span class="combo-chips"></span><input type="text" class="combo-input" placeholder="${ph}" autocomplete="off"></div>
-      <div class="combo-menu hidden"></div>
-    </div>
-  </div>`;
-}
-function initCombos(step){
-  if(!window.__comboDoc){
-    document.addEventListener("click",e=>{
-      document.querySelectorAll(".combo").forEach(c=>{ if(!c.contains(e.target)){ const m=c.querySelector(".combo-menu"); if(m) m.classList.add("hidden"); } });
-    });
-    window.__comboDoc=true;
-  }
+function initCombos(){
+  if(!window.__comboDoc){ document.addEventListener("click",e=>{ document.querySelectorAll(".combo").forEach(c=>{ if(!c.contains(e.target)){ const m=c.querySelector(".combo-menu"); if(m) m.classList.add("hidden"); } }); }); window.__comboDoc=true; }
   content.querySelectorAll(".combo").forEach(c=>{
-    const key=c.dataset.combo, mode=c.dataset.mode;
-    const input=c.querySelector(".combo-input"), menu=c.querySelector(".combo-menu");
-    if(mode==="multi") renderChips(c,key);
+    const key=c.dataset.combo, input=c.querySelector(".combo-input"), menu=c.querySelector(".combo-menu");
+    renderChips(c,key);
     const open=()=>{ renderMenu(c,key,input.value); menu.classList.remove("hidden"); };
-    input.addEventListener("focus",open);
-    input.addEventListener("click",open);
-    input.addEventListener("input",open);
-    if(mode==="single") input.addEventListener("blur",()=>setTimeout(()=>{ input.value=state.data.country||""; },150));
+    input.addEventListener("focus",open); input.addEventListener("click",open); input.addEventListener("input",open);
   });
 }
 function renderMenu(c,key,filter){
-  const menu=c.querySelector(".combo-menu"), mode=c.dataset.mode;
-  if(key==="subsectors" && (state.data.sectors||[]).length===0){ menu.innerHTML='<div class="combo-empty">Pick a sector first — sub-sectors are filtered to match.</div>'; return; }
-  const sel = mode==="multi" ? (state.data[key]||[]) : [];
-  const fl=(filter||"").toLowerCase();
+  const menu=c.querySelector(".combo-menu");
+  if(key==="subSector" && (state.data.sector||[]).length===0){ menu.innerHTML='<div class="combo-empty">Pick a sector first — sub-sectors are filtered to match.</div>'; return; }
+  const sel=state.data[key]||[]; const fl=(filter||"").toLowerCase();
   const list=comboOptions(key).filter(o=>o.toLowerCase().includes(fl) && !sel.includes(o));
   if(list.length===0){ menu.innerHTML='<div class="combo-empty">No matches.</div>'; return; }
   menu.innerHTML=list.map(o=>`<div class="combo-opt" data-v="${esc(o)}">${o}</div>`).join("");
-  menu.querySelectorAll(".combo-opt").forEach(opt=>{
-    opt.onclick=(e)=>{ e.stopPropagation(); chooseOption(c,key,opt.dataset.v); };
-  });
+  menu.querySelectorAll(".combo-opt").forEach(opt=>opt.onclick=(e)=>{ e.stopPropagation(); chooseOption(c,key,opt.dataset.v); });
 }
 function chooseOption(c,key,val){
-  const input=c.querySelector(".combo-input"), menu=c.querySelector(".combo-menu"), mode=c.dataset.mode;
-  if(mode==="single"){
-    state.data.country=val; input.value=val; setRegionFromCountry(val);
-    menu.classList.add("hidden"); clearErr(c.closest(".field")); flagSaved(); updatePreview();
-  } else {
-    let arr=state.data[key]||[]; if(!arr.includes(val)) arr=[...arr,val]; state.data[key]=arr;
-    input.value=""; renderChips(c,key); renderMenu(c,key,""); menu.classList.remove("hidden");
-    if(key==="sectors") syncSubsectors();
-    clearErr(c.closest(".field")); flagSaved(); input.focus();
-  }
+  let arr=state.data[key]||[]; if(!arr.includes(val)) arr=[...arr,val]; state.data[key]=arr;
+  const input=c.querySelector(".combo-input"); input.value=""; renderChips(c,key); renderMenu(c,key,""); c.querySelector(".combo-menu").classList.remove("hidden");
+  if(key==="sector") syncSubsectors();
+  clearErr(c.closest(".field")); flagSaved(); input.focus();
 }
 function renderChips(c,key){
-  const wrap=c.querySelector(".combo-chips"); if(!wrap) return;
-  const arr=state.data[key]||[];
+  const wrap=c.querySelector(".combo-chips"); if(!wrap) return; const arr=state.data[key]||[];
   wrap.innerHTML=arr.map(v=>`<span class="combo-tag"><b>${v}</b><span class="x" data-v="${esc(v)}">×</span></span>`).join("");
-  wrap.querySelectorAll(".x").forEach(x=>x.onclick=(e)=>{
-    e.stopPropagation();
-    state.data[key]=(state.data[key]||[]).filter(v=>v!==x.dataset.v);
-    renderChips(c,key); renderMenu(c,key,"");
-    if(key==="sectors") syncSubsectors();
-    flagSaved();
-  });
+  wrap.querySelectorAll(".x").forEach(x=>x.onclick=(e)=>{ e.stopPropagation(); state.data[key]=(state.data[key]||[]).filter(v=>v!==x.dataset.v); renderChips(c,key); renderMenu(c,key,""); if(key==="sector") syncSubsectors(); flagSaved(); });
 }
-function syncSubsectors(){
-  const allowed=subsForSelected(state.data.sectors||[]);
-  state.data.subsectors=(state.data.subsectors||[]).filter(x=>allowed.includes(x));
-  const sc=content.querySelector('.combo[data-combo="subsectors"]');
-  if(sc){ renderChips(sc,"subsectors"); renderMenu(sc,"subsectors",""); }
-}
-function setRegionFromCountry(name){
-  const r=COUNTRIES[name]||"";
-  if(r){ state.data.region=r; const sel=content.querySelector('[data-f="region"]'); if(sel){ sel.value=r; clearErr(sel.closest(".field")); } }
-}
+function syncSubsectors(){ const allowed=subsForSelected(state.data.sector||[]); state.data.subSector=(state.data.subSector||[]).filter(x=>allowed.includes(x)); const sc=content.querySelector('.combo[data-combo="subSector"]'); if(sc){ renderChips(sc,"subSector"); renderMenu(sc,"subSector",""); } }
 
-/* ---------------- bind inputs ---------------- */
-function bindFields(step){
-  // text/number/textarea/select/date/url
-  content.querySelectorAll("[data-f]").forEach(el=>{
-    if(el.classList.contains("combo-input")) return;
-    if(el.tagName==="INPUT" && el.type!=="button" || el.tagName==="TEXTAREA"){
-      el.addEventListener("input", ()=>{ setVal(el.dataset.f, el.type==="number"?(el.value===""?"":parseFloat(el.value)):el.value); maybeRegion(el.dataset.f); el.classList.remove("input-err"); clearErr(el.closest(".field")); updatePreview(); });
-    }
-    if(el.tagName==="SELECT"){
-      el.addEventListener("change", ()=>{ setVal(el.dataset.f, el.value); maybeRegion(el.dataset.f); clearErr(el.closest(".field")); applyConditions(step); updatePreview(); });
-    }
-  });
-  // choices
-  content.querySelectorAll(".choice").forEach(c=>{
-    c.onclick=()=>{
-      const f=c.dataset.f, v=c.dataset.v;
-      setVal(f,v);
-      content.querySelectorAll(`.choice[data-f="${f}"]`).forEach(x=>x.classList.remove("sel"));
-      c.classList.add("sel");
-      clearErr(c.closest(".field"));
-      // re-render step to reflect dynamic relabeling (party highlight, conditional fields)
-      if(f==="advised"||f==="natureCap"||f==="natureAdv"){ refreshDynamic(step); }
-      else applyConditions(step);
-      updatePreview();
-    };
-  });
-  // toggles
-  content.querySelectorAll(".toggle").forEach(t=>{
-    t.querySelectorAll("button").forEach(b=>{
-      b.onclick=()=>{
-        const f=t.dataset.f, v=b.dataset.v==="true";
-        setVal(f,v);
-        t.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
-        b.classList.add("on");
-        clearErr(t.closest(".field"));
-        applyConditions(step); updateBadges(); updatePreview();
-      };
-    });
-  });
-  updateBadges();
-  // chips
-  content.querySelectorAll(".chips").forEach(group=>{
-    group.querySelectorAll(".chip").forEach(chip=>{
-      chip.onclick=()=>{
-        const f=group.dataset.f, val=chip.dataset.v;
-        let arr = state.data[f]||[];
-        if(arr.includes(val)) arr=arr.filter(x=>x!==val); else arr=[...arr,val];
-        state.data[f]=arr; chip.classList.toggle("sel"); flagSaved();
-        clearErr(group.closest(".field"));
-      };
-    });
-  });
-  initCombos(step);
-}
-
-function maybeRegion(fid){
-  if(fid==="country"){ /* tiny auto-suggest demo */
-    const c=(state.data.country||"").toLowerCase();
-    let r="";
-    if(/austral|new zealand|singapore|japan|indonesia|malaysia|korea|china/.test(c)) r="Asia-Pacific";
-    else if(/india|pakistan|bangladesh|sri lanka/.test(c)) r="South Asia";
-    else if(/netherl|german|france|spain|italy|uk|united kingdom|ireland|sweden|poland/.test(c)) r="Europe";
-    else if(/united states|usa|canada|mexico/.test(c)) r="North America";
-    else if(/brazil|chile|argentina|colombia|peru/.test(c)) r="Latin America & Caribbean";
-    if(r){ state.data.region=r; const sel=content.querySelector('[data-f="region"]'); if(sel) sel.value=r; }
-  }
-}
-
+/* ---------- binding ---------- */
 let autosaveTimer=null;
 function setVal(f,v){ state.data[f]=v; flagSaved(); }
-function flagSaved(){
-  const el=document.getElementById("autosave"); if(!el) return;
-  el.classList.add("show");
-  clearTimeout(autosaveTimer);
-  autosaveTimer=setTimeout(()=>{ /* stays shown; reassurance is the point */ },1000);
-}
-
-/* plain-English visibility badges (most common point of confusion) */
-function updateBadges(){
-  content.querySelectorAll("[data-badge]").forEach(b=>{
-    const f=b.dataset.badge, on=state.data[f]===true;
-    if(f==="discDeal"){
-      b.className="vis-badge "+(on?"pub":"int");
-      b.innerHTML = on
-        ? "🌐 Visible to the whole Globalscope network &amp; the public website"
-        : "🔒 Kept internal to the MApp — used only for league tables &amp; analysis";
-    } else { // discEV / size
-      b.className="vis-badge "+(on?"pub":"int");
-      b.innerHTML = on
-        ? "🌐 May appear publicly — only if you include the figure in your description"
-        : "🔒 Figures used internally only";
+function flagSaved(){ const el=document.getElementById("autosave"); if(el) el.classList.add("show"); }
+function bindFields(step){
+  content.querySelectorAll("[data-f]").forEach(el=>{
+    if(el.classList.contains("combo-input")) return;
+    if((el.tagName==="INPUT" && el.type!=="button") || el.tagName==="TEXTAREA"){
+      el.addEventListener("input",()=>{ setVal(el.dataset.f, el.type==="number"?(el.value===""?"":parseFloat(el.value)):el.value); el.classList.remove("input-err"); clearErr(el.closest(".field")); updatePreview(); });
     }
+    if(el.tagName==="SELECT"){ el.addEventListener("change",()=>{ setVal(el.dataset.f, el.value); maybeRegion(el.dataset.f); clearErr(el.closest(".field")); applyConditions(step); updatePreview(); }); }
   });
+  content.querySelectorAll(".toggle").forEach(t=>{ t.querySelectorAll("button").forEach(b=>{ b.onclick=()=>{ const f=t.dataset.f; setVal(f, b.dataset.v==="true"); t.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); clearErr(t.closest(".field")); applyConditions(step); updatePreview(); }; }); });
+  content.querySelectorAll("[data-file]").forEach(el=>{ el.onclick=()=>{ setVal(el.dataset.file,"client-logo.png"); el.textContent="📎 client-logo.png ✓"; clearErr(el.closest(".field")); }; });
 }
+function maybeRegion(fid){ if(fid==="country"){ const r=COUNTRIES[state.data.country]||""; if(r){ state.data.region=r; const sel=content.querySelector('[data-f="region"]'); if(sel){ sel.value=r; clearErr(sel.closest(".field")); } } } }
+function applyConditions(step){ step.fields.forEach(f=>{ if(!f.showIf) return; const w=content.querySelector(`[data-field="${f.id}"]`); if(w) w.classList.toggle("hidden", !evalShow(f.showIf)); });
+  const info=content.querySelector(".infobox"); if(info && step.info==="ev") info.style.display = state.data.transactionType==="M&A"?"flex":"none"; }
 
-/* re-render current step (used when a driver answer changes layout) */
-function refreshDynamic(step){ renderStep(step); }
-
-/* show/hide conditional fields without full re-render (keeps focus) */
-function applyConditions(step){
-  step.fields.forEach(f=>{
-    if(!f.showIf) return;
-    const wrap = content.querySelector(`[data-field="${f.id}"]`);
-    if(!wrap) return;
-    wrap.classList.toggle("hidden", !evalShow(f.showIf));
-  });
-}
-function evalShow(cond){
-  const val = state.data[cond.f];
-  if("eq" in cond) return val===cond.eq;
-  if("in" in cond) return cond.in.includes(val);
-  return true;
-}
-
-/* ---------------- tombstone preview ---------------- */
-function previewPanel(){
-  return `<div class="preview-label">Live tombstone preview</div>
-    <div class="tombstone" id="tomb">
-      <div class="tt-head">GLOBALSCOPE</div>
-      <div class="tt-body" id="tombBody"></div>
-    </div>
-    <p class="preview-note">Updates as you type, so you see exactly how the deal will appear before you submit.</p>`;
-}
+/* ---------- preview (client-centric) ---------- */
+function previewPanel(){ return `<div class="preview-label">Live tombstone preview</div><div class="tombstone" id="tomb"><div class="tt-head">GLOBALSCOPE</div><div class="tt-body" id="tombBody"></div></div><p class="preview-note">Updates as you type — see how the deal will appear before you submit.</p>`; }
+function fmtYear(d){ return (d||"").slice(0,4); }
 function updatePreview(){
-  const body = document.getElementById("tombBody");
-  if(!body) return;
-  const d=state.data;
-  if(state.type==="mna"){
-    const buyer = d.buyerName||"Buyer";
-    const target= d.targetName||"Target";
-    let verb = d.verb;
-    if(!verb){
-      verb = d.advised==="fair" ? "Fairness opinion on the acquisition of"
-            : "has acquired";
-    }
-    body.innerHTML = `
-      <div class="logo-slot">${target}</div>
-      <div class="verb">${d.advised==="fair"?"Fairness opinion — acquisition of":"has been acquired by"}</div>
-      <div class="logo-slot">${buyer}</div>
-      <div class="meta">${[d.country, d.closeDate?fmtYear(d.closeDate):"", (d.sectors&&d.sectors[0])||""].filter(Boolean).join(" · ")||"Geography · Year · Sector"}</div>`;
-  } else if(state.type==="capital"){
-    const co=d.companyName||"Company";
-    const amt = d.amount?fmtMoney(d.amount,d.amtCcy):"Capital raise";
-    const nat = ({equity:"Equity raise",debt:"Debt raise",hybrid:"Structured raise"})[d.natureCap]||"Capital raise";
-    body.innerHTML = `
-      <div class="logo-slot">${co}</div>
-      <div class="verb">${nat}${d.amount?" · "+amt:""}</div>
-      <div class="meta">${[d.country, d.closeDate?fmtYear(d.closeDate):"", (d.sectors&&d.sectors[0])||""].filter(Boolean).join(" · ")||"Geography · Year · Sector"}</div>`;
-  }
+  const b=document.getElementById("tombBody"); if(!b) return; const d=state.data;
+  const meta=[d.country, d.closingDate?fmtYear(d.closingDate):"", (d.sector&&d.sector[0])||""].filter(Boolean).join(" · ")||"Country · Year · Sector";
+  b.innerHTML=`<div class="logo-slot">${d.clientName||"Client logo"}</div>
+    <div class="verb">${d.tombstoneText||"Tombstone text"}</div>
+    ${d.transactionName?`<div style="font-size:12px;color:var(--muted);margin-top:6px">${d.transactionName}</div>`:''}
+    <div class="meta">${meta}</div>`;
 }
-function fmtYear(dstr){ const y=(dstr||"").slice(0,4); return y||""; }
-function fmtMoney(n,c){ if(n==null||n==="")return ""; const num=Number(n);
-  if(num>=1e9) return (c||"")+ " " + (num/1e9).toFixed(1)+"bn";
-  if(num>=1e6) return (c||"")+ " " + (num/1e6).toFixed(0)+"m";
-  return (c||"")+" "+num.toLocaleString(); }
 
-/* ---------------- nav ---------------- */
-function nav(){
-  const steps=SCHEMA[state.type].steps;
-  const last = state.step===steps.length-1;
-  return `<div class="actions">
-    <div>${state.step>0?'<button class="btn btn-ghost" id="back">‹ Back</button>':'<button class="btn btn-ghost" id="changeType">‹ Change type</button>'}</div>
-    <div style="display:flex;gap:14px;align-items:center">
-      <button class="btn-draft" id="draft">Save as draft</button>
-      <button class="btn btn-primary" id="next">${last?'Review ›':'Continue ›'}</button>
-    </div>
-  </div>`;
-}
+/* ---------- nav + validation ---------- */
+function nav(){ const last=state.step===STEPS.length-1;
+  return `<div class="actions"><div>${state.step>0?'<button class="btn btn-ghost" id="back">‹ Back</button>':''}</div>
+    <div style="display:flex;gap:14px;align-items:center"><button class="btn-draft" id="draft">Save as draft</button><button class="btn btn-primary" id="next">${last?'Review ›':'Continue ›'}</button></div></div>`; }
 function bindNav(){
   const b=$("#back"); if(b) b.onclick=()=>{ state.step--; render(); };
-  const ct=$("#changeType"); if(ct) ct.onclick=()=>{ state.type=null; state.step=0; render(); };
-  const n=$("#next"); if(n) n.onclick=()=>{
-    const step=SCHEMA[state.type].steps[state.step];
-    if(validateStep(step)){ state.step++; render(); }
-  };
+  const n=$("#next"); if(n) n.onclick=()=>{ if(validateStep(STEPS[state.step])){ state.step++; render(); } };
   const d=$("#draft"); if(d) d.onclick=()=>{ d.textContent="✓ Draft saved"; flagSaved(); setTimeout(()=>d.textContent="Save as draft",1600); };
 }
-
-/* ---- gentle validation: stop members sailing past a blank required field ---- */
-function clearErr(fieldEl){ if(fieldEl) fieldEl.classList.remove("err"); const vn=$("#valnote"); if(vn && !content.querySelector(".field.err")) vn.remove(); }
+function clearErr(el){ if(el) el.classList.remove("err"); const vn=$("#valnote"); if(vn && !content.querySelector(".field.err")) vn.remove(); }
 function isEmpty(v){ return v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0); }
-
 function validateStep(step){
-  // clear prior
   content.querySelectorAll(".field.err").forEach(e=>e.classList.remove("err"));
-  content.querySelectorAll(".input-err").forEach(e=>e.classList.remove("input-err"));
-  const oldNote=$("#valnote"); if(oldNote) oldNote.remove();
-
-  const missing=[]; // {label, fieldId?, inputName?}
-  // declared required, visible fields
-  step.fields.forEach(f=>{
-    if(!f.req) return;
-    if(f.showIf && !evalShow(f.showIf)) return;
-    if(isEmpty(state.data[f.id])) missing.push({label:f.label, fieldId:f.id});
-  });
-  // composite party essentials
-  if(step.key==="parties"){
-    if(state.type==="mna"){
-      if(isEmpty(state.data.buyerName)) missing.push({label:"Buyer / Acquirer name", inputName:"buyerName"});
-      if(isEmpty(state.data.targetName)) missing.push({label:"Target / Seller name", inputName:"targetName"});
-    } else if(state.type==="capital"){
-      if(isEmpty(state.data.companyName)) missing.push({label:"Company name", inputName:"companyName"});
-    } else if(state.type==="advisory"){
-      if(isEmpty(state.data.clientName)) missing.push({label:"Client name", inputName:"clientName"});
-    }
-  }
+  const old=$("#valnote"); if(old) old.remove();
+  const missing=[];
+  step.fields.forEach(f=>{ if(!f.req) return; if(f.showIf && !evalShow(f.showIf)) return; if(isEmpty(state.data[f.id])) missing.push({label:f.label,id:f.id}); });
   if(missing.length===0) return true;
-
-  // highlight
-  missing.forEach(m=>{
-    if(m.fieldId){ const w=content.querySelector(`[data-field="${m.fieldId}"]`); if(w) w.classList.add("err"); }
-    if(m.inputName){ const inp=content.querySelector(`[data-f="${m.inputName}"]`); if(inp){ inp.classList.add("input-err"); inp.closest(".field")?.classList.add("err"); } }
-  });
-  const note=document.createElement("div");
-  note.className="valnote"; note.id="valnote";
+  missing.forEach(m=>{ const w=content.querySelector(`[data-field="${m.id}"]`); if(w) w.classList.add("err"); });
+  const note=document.createElement("div"); note.className="valnote"; note.id="valnote";
   note.innerHTML=`<span>⚠️</span><div><b>Almost there.</b> Please complete: ${missing.map(m=>m.label).join(", ")}. You can still <b>Save as draft</b> and finish later.</div>`;
-  const panel=content.querySelector(".panel");
-  panel.insertBefore(note, panel.querySelector(".infobox")||panel.querySelector(".field"));
+  const panel=content.querySelector(".panel"); panel.insertBefore(note, panel.querySelector(".infobox")||panel.querySelector(".field"));
   const first=content.querySelector(".field.err"); if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
   return false;
 }
 
-/* ---------------- review ---------------- */
+/* ---------- review & finish ---------- */
+function row(k,v){ return `<dt>${k}</dt><dd>${v||"—"}</dd>`; }
+function money(id){ const v=state.data[id]; if(v===undefined||v==="")return "—"; return Number(v).toLocaleString(); }
 function renderReview(){
-  const d=state.data;
-  const t=state.type;
-  const showPreview=(t==="mna"||t==="capital");
-  let groups="";
-
-  const partyRows = t==="mna"
-    ? [["Side advised", ({sell:"Sell-side",buy:"Buy-side",fair:"Fairness opinion"})[d.advised]||"—"],
-       ["Buyer / Acquirer", d.buyerName||"—"], ["Target / Seller", d.targetName||"—"],
-       ["Completion date", d.closeDate||"—"]]
-    : t==="capital"
-    ? [["Capital type", ({equity:"Equity",debt:"Debt",hybrid:"Hybrid / structured"})[d.natureCap]||"—"],
-       ["Company", d.companyName||"—"], ["Lead investor", d.investorName||"—"],
-       ["Completion date", d.closeDate||"—"]]
-    : [["Assignment", d.natureAdv||"—"], ["Client", d.clientName||"—"], ["Completion date", d.closeDate||"—"]];
-
-  groups += reviewGroup("Parties & role", 0, partyRows);
-  groups += reviewGroup("Details", 1, [
-    ["Sector(s)", (d.sectors||[]).join(", ")||"—"],
-    ["Sub-sector(s)", (d.subsectors||[]).join(", ")||"—"],
-    ["Country", d.country||"—"], ["Region", d.region||"—"],
-    ["Description", d.desc||"—"], ["Public link", d.prurl||"—"]
-  ]);
-  const finRows = t==="mna"
-    ? [["Shown externally", yn(d.discDeal)], ["Enterprise Value", money(d.ev,d.evCcy)],
-       ["EV shown externally", yn(d.discEV)], ["EV / EBITDA", d.evEbitda??"—"], ["EV / Revenue", d.evRev??"—"]]
-    : t==="capital"
-    ? [["Shown externally", yn(d.discDeal)], ["Amount raised", money(d.amount,d.amtCcy)],
-       ["Post-money equity val.", money(d.postEq,d.postEqCcy)], ["Post-money EV", money(d.postEV,d.postEVCcy)],
-       ["Figures shown externally", yn(d.discEV)]]
-    : [["Shown externally", yn(d.discDeal)], ["Relevant size", money(d.size,d.sizeCcy)], ["Size shown externally", yn(d.discEV)]];
-  groups += reviewGroup("Financials", 2, finRows);
-  groups += reviewGroup("Recognition", 3, [
-    ["Collaborated w/ member", yn(d.collab)],
-    ["Partner firm", d.collabMember||"—"],
-    ["Tagged", (d.tagged||[]).join(", ")||"—"]
-  ]);
-
-  let body=`<div class="panel"><h2>Review &amp; submit</h2>
-    <p class="lead">Everything in one place. Click <b>Edit</b> on any section to jump back.</p>${groups}
-    <div class="actions" style="margin-top:18px">
-      <button class="btn btn-ghost" id="back">‹ Back</button>
-      <button class="btn btn-primary" id="submit">Submit transaction ✓</button>
-    </div></div>`;
-
-  let html=stepper(5);
-  html += showPreview
-    ? `<div class="layout"><div>${body}</div><div class="preview-wrap">${previewPanel()}</div></div>`
-    : body;
-  content.innerHTML=html;
-  $("#back").onclick=()=>{ state.step=SCHEMA[state.type].steps.length-1; render(); };
+  const d=state.data; const t=d.transactionType;
+  let detailRows=row("Transaction Name",d.transactionName)+row("Client",d.clientName)+(d.assetName?row("Asset",d.assetName):"")+row("Type",d.transactionType)+(t==="M&A"?row("Side advised",d.mnaType):"")+row("Tombstone text",d.tombstoneText)+row("Collaboration",d.collaborate?(d.collaborateMember||"Yes"):"No")+row("Sector",(d.sector||[]).join(", "))+row("Sub-sector",(d.subSector||[]).join(", "))+row("Country / Region",[d.country,d.region].filter(Boolean).join(" · "))+row("Closing date",d.closingDate);
+  let finRows;
+  if(t==="Capital Raise") finRows=row("Disclosed externally",yn(d.disclosedExternally))+row("Amount raised",d.amountRaisedCcy+" "+money("amountRaised"))+row("Nature of capital",d.natureOfCapital)+row("Post-money equity",money("postMoneyEquity"))+row("Post-money EV",money("postMoneyEV"));
+  else if(t==="Other Advisory Services") finRows=row("Disclosed externally",yn(d.disclosedExternally))+row("Advisory type",d.natureOfAdvisory)+row("Relevant size",money("relevantSize"));
+  else finRows=row("Disclosed externally",yn(d.disclosedExternally))+row("EV disclosed externally",yn(d.evDisclosedExternally))+row("Enterprise Value",d.evCurrency+" "+money("enterpriseValue"))+row("EV / EBITDA",d.evEbitda??"—")+row("EV / Revenue",d.evRevenue??"—");
+  const body=`<div class="panel"><h2>Review &amp; finish</h2><p class="lead">Check everything, tag your team, then submit. Click Edit to jump back.</p>
+    <div class="review-grp"><div class="rg-head">Transaction details<a data-jump="0">Edit</a></div><dl>${detailRows}</dl></div>
+    <div class="review-grp"><div class="rg-head">Financial details<a data-jump="1">Edit</a></div><dl>${finRows}</dl></div>
+    <div class="field" data-field="tagged"><label>Tag members who worked on this transaction</label>
+      <div class="combo" data-combo="tagged"><div class="combo-box"><span class="combo-chips"></span><input type="text" class="combo-input" placeholder="Search and add members…" autocomplete="off"></div><div class="combo-menu hidden"></div></div></div>
+    <div class="actions"><button class="btn btn-ghost" id="back">‹ Back</button><button class="btn btn-primary" id="submit">Submit transaction ✓</button></div></div>`;
+  content.innerHTML = stepper(2) + `<div class="layout"><div>${body}</div><div class="preview-wrap">${previewPanel()}</div></div>`;
+  initCombos(); updatePreview();
+  $("#back").onclick=()=>{ state.step=STEPS.length-1; render(); };
   $("#submit").onclick=()=>{ state.step=99; render(); };
-  document.querySelectorAll("[data-jump]").forEach(a=>a.onclick=()=>{ state.step=parseInt(a.dataset.jump); render(); });
-  updatePreview();
+  content.querySelectorAll("[data-jump]").forEach(a=>a.onclick=()=>{ state.step=parseInt(a.dataset.jump); render(); });
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function reviewGroup(title, jump, rows){
-  return `<div class="review-grp"><div class="rg-head">${title}<a data-jump="${jump}">Edit</a></div>
-    <dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></div>`;
-}
 function yn(v){ return v===true?"Yes":v===false?"No":"—"; }
-function money(n,c){ if(n==null||n==="")return "—"; return (c||"")+" "+Number(n).toLocaleString(); }
 
-/* ---------------- confirmation ---------------- */
 function renderConfirm(){
-  content.innerHTML = stepper(6).replace('stepper','stepper') + `
-  <div class="panel"><div class="confirm">
-    <div class="ok">✓</div>
-    <h2>Transaction submitted</h2>
+  content.innerHTML = `<div class="panel"><div class="confirm"><div class="ok">✓</div><h2>Transaction submitted</h2>
     <p>Thanks. Your submission is with the Globalscope team for review. You'll be notified when it's live — usually within one business day.</p>
     <div style="display:flex;gap:12px;justify-content:center">
       <button class="btn btn-ghost" id="wzAnother">Report another</button>
       <button class="btn btn-primary" id="wzDone">Back to Transactions</button>
-    </div>
-  </div></div>`;
+    </div></div></div>`;
   var _a=document.getElementById("wzAnother"); if(_a)_a.onclick=function(){resetAll();};
   var _d=document.getElementById("wzDone"); if(_d)_d.onclick=function(){ if(EXIT) EXIT(); };
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function resetAll(){
-  state = { type:null, step:0, data:{ evCcy:"AUD", amtCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD",
-            discDeal:true, discEV:true, collab:false, tagged:["You"], sectors:[], subsectors:[] } };
-  render();
-}
+function resetAll(){ state={ step:0, data:{ evCurrency:"AUD", amountRaisedCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", disclosedExternally:true, evDisclosedExternally:true, collaborate:false, sector:[], subSector:[], tagged:["You (Brendan Cockram)"] } }; render(); }
 
 return { open: open };
 })();
