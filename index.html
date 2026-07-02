@@ -1082,7 +1082,6 @@ const STEPS=[
       { id:"clientHQ", label:"Client HQ", req:true, type:"country" },
       { id:"clientLogo", label:"Client Logo", req:true, type:"file", helper:"Appears on the tombstone. Max 2 MB." },
       { id:"businessDescription", label:"Business Description", type:"textarea", placeholder:"A short description of your client's business…", helper:"Improves your visibility in member search." },
-      { id:"transactionType", label:"Transaction Type", req:true, type:"select", source:TYPES, helper:"Drives the financial details we ask for next." },
       { id:"mnaType", label:"Type of transaction", req:true, type:"select", source:["Buy-side","Sell-side","Fairness opinion"], helper:"Which side did you advise?", showIf:{f:"transactionType",eq:"M&A"} },
       { id:"collaborate", label:"Did you collaborate with another Globalscope member?", req:true, type:"toggle", helper:"Cross-border collaboration is a core Globalscope story." },
       { id:"collaborateMember", label:"Which member firm?", type:"text", placeholder:"Search member firms…", showIf:{f:"collaborate",eq:true} },
@@ -1111,7 +1110,7 @@ const STEPS=[
       { id:"relevantSize", label:"Relevant Transaction / Valuation Size", type:"amount", curId:"sizeCcy", helper:"Where appropriate. Leave blank if not relevant.", showIf:{f:"transactionType",eq:"Other Advisory Services"} }
     ]}
 ];
-const STEP_NAMES=["Details","Financials","Review"];
+const STEP_NAMES=["Type","Details","Financials","Review"];
 
 let state = { step:0, data:{ evCurrency:"AUD", amountRaisedCcy:"EUR", postEqCcy:"EUR", postEVCcy:"EUR", sizeCcy:"USD", disclosedExternally:true, evDisclosedExternally:true, collaborate:false, sector:[], subSector:[], tagged:["You (Brendan Cockram)"] } };
 
@@ -1120,9 +1119,21 @@ const $ = sel => document.querySelector(sel);
 
 function render(){
   if(state.step===99){ renderConfirm(); return; }
-  if(state.step>=STEPS.length){ renderReview(); return; }
-  renderStep(STEPS[state.step]);
+  if(state.step===0){ renderTypeSelect(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(state.step>=3){ renderReview(); return; }
+  renderStep(STEPS[state.step-1]);
   window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderTypeSelect(){
+  const cards=[
+    {t:"M&A", d:"A business was bought or sold — acquisition, sale, merger or divestiture.", ex:"You'll pick buy-side, sell-side or fairness opinion next."},
+    {t:"Capital Raise", d:"A company raised funding — equity, debt or structured capital.", ex:"We'll ask the amount raised and valuations."},
+    {t:"Other Advisory Services", d:"Valuations, consulting and strategic advisory (fairness opinions sit under M&A).", ex:"Lighter on financials."}
+  ];
+  content.innerHTML = stepper(0) + `<div class="panel"><h2>What kind of transaction are you reporting?</h2>
+    <p class="lead">Pick one to begin — the form then asks only the questions that matter for that type.</p>
+    <div class="typegrid">${cards.map(c=>`<div class="typecard ${state.data.transactionType===c.t?'sel':''}" data-type="${c.t}"><h3>${c.t}</h3><p>${c.d}</p><div class="ex">${c.ex}</div></div>`).join("")}</div></div>`;
+  content.querySelectorAll(".typecard").forEach(c=>c.onclick=()=>{ state.data.transactionType=c.dataset.type; state.step=1; render(); });
 }
 function stepper(active){
   let h='<div class="stepper">';
@@ -1238,12 +1249,12 @@ function updatePreview(){
 }
 
 /* ---------- nav + validation ---------- */
-function nav(){ const last=state.step===STEPS.length-1;
-  return `<div class="actions"><div>${state.step>0?'<button class="btn btn-ghost" id="back">‹ Back</button>':''}</div>
+function nav(){ const last=state.step===2;
+  return `<div class="actions"><div><button class="btn btn-ghost" id="back">${state.step===1?'‹ Change type':'‹ Back'}</button></div>
     <div style="display:flex;gap:14px;align-items:center"><button class="btn-draft" id="draft">Save as draft</button><button class="btn btn-primary" id="next">${last?'Review ›':'Continue ›'}</button></div></div>`; }
 function bindNav(){
   const b=$("#back"); if(b) b.onclick=()=>{ state.step--; render(); };
-  const n=$("#next"); if(n) n.onclick=()=>{ if(validateStep(STEPS[state.step])){ state.step++; render(); } };
+  const n=$("#next"); if(n) n.onclick=()=>{ if(validateStep(STEPS[state.step-1])){ state.step++; render(); } };
   const d=$("#draft"); if(d) d.onclick=()=>{ d.textContent="✓ Draft saved"; flagSaved(); setTimeout(()=>d.textContent="Save as draft",1600); };
 }
 function clearErr(el){ if(el) el.classList.remove("err"); const vn=$("#valnote"); if(vn && !content.querySelector(".field.err")) vn.remove(); }
@@ -1280,7 +1291,7 @@ function renderReview(){
     <div class="actions"><button class="btn btn-ghost" id="back">‹ Back</button><button class="btn btn-primary" id="submit">Submit transaction ✓</button></div></div>`;
   content.innerHTML = stepper(2) + `<div class="layout"><div>${body}</div><div class="preview-wrap">${previewPanel()}</div></div>`;
   initCombos(); updatePreview();
-  $("#back").onclick=()=>{ state.step=STEPS.length-1; render(); };
+  $("#back").onclick=()=>{ state.step=2; render(); };
   $("#submit").onclick=()=>{ state.step=99; render(); };
   content.querySelectorAll("[data-jump]").forEach(a=>a.onclick=()=>{ state.step=parseInt(a.dataset.jump); render(); });
   window.scrollTo({top:0,behavior:"smooth"});
